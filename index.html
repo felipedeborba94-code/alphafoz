@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlphaFoz Empreendimentos — Gestão de Obras</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --navy: #0d1b2e; --navy2: #152540; --navy3: #1c3055;
+    --gold: #b8942a; --gold2: #d4ad45; --gold3: #f0cc70;
+    --cream: #f4f6f9; --white: #ffffff; --gray: #7a8fa8;
+    --light: #e2e8f0; --green: #1e6b48; --red: #b03020;
+    --shadow: 0 4px 28px rgba(13,27,46,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--navy); min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #0d1b2e 0%, #152540 100%);
+    padding: 0 20px; display: flex; align-items: center;
+    justify-content: space-between; height: 68px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(180,148,42,0.25);
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 44px; height: 44px; }
+  .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .logo-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: 2px; color: var(--white); }
+  .logo-sub { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 0.58rem; letter-spacing: 3px; color: var(--gold2); text-transform: uppercase; }
+  .obra-header-badge {
+    background: rgba(180,148,42,0.15); color: var(--gold2);
+    border: 1px solid rgba(180,148,42,0.35);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  /* LOADING */
+  #loadingOverlay {
+    position: fixed; inset: 0; background: rgba(13,27,46,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; flex-direction: column; gap: 12px;
+  }
+  .spinner {
+    width: 40px; height: 40px; border: 3px solid rgba(212,173,69,0.3);
+    border-top-color: var(--gold2); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loadingOverlay span { color: var(--gold2); font-size: 0.85rem; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
+
+  nav {
+    background: var(--navy3); display: flex; overflow-x: auto;
+    border-bottom: 2px solid rgba(180,148,42,0.3); padding: 0 12px;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    background: none; border: none; cursor: pointer;
+    color: var(--gray); font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    padding: 12px 16px; white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all .2s; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  nav button.active { color: var(--gold2); border-bottom-color: var(--gold2); }
+  nav button:hover:not(.active) { color: var(--white); }
+
+  main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card {
+    background: var(--white); border-radius: 12px;
+    padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'Montserrat', sans-serif; font-weight: 700;
+    font-size: 1.05rem; color: var(--navy); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold2); display: inline-block; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .span2 { grid-column: span 2; }
+  label { font-size: 0.78rem; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+  input, select, textarea {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--light);
+    border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
+    color: var(--navy); background: var(--cream); transition: border .2s;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold2); background: var(--white); }
+
+  .btn {
+    padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; transition: all .2s;
+  }
+  .btn-primary { background: var(--gold2); color: var(--navy); }
+  .btn-primary:hover { background: var(--gold3); }
+  .btn-danger { background: var(--red); color: white; font-size: 0.78rem; padding: 6px 12px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+  .sum-card {
+    background: linear-gradient(145deg, var(--navy2), var(--navy3));
+    border-radius: 14px; padding: 18px; color: var(--white);
+    border: 1px solid rgba(180,148,42,0.15);
+  }
+  .sum-card.gold { background: linear-gradient(135deg, #c9a030, #8a6a10); color: var(--white); border: 1px solid rgba(240,204,112,0.3); }
+  .sum-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.7; margin-bottom: 6px; }
+  .sum-card .value { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.4rem; }
+  .sum-card .sub { font-size: 0.72rem; opacity: 0.6; margin-top: 4px; }
+
+  .obra-selector { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .obra-chip {
+    padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--light);
+    background: var(--white); cursor: pointer; font-size: 0.82rem;
+    font-weight: 500; transition: all .2s; color: var(--navy);
+  }
+  .obra-chip.active { border-color: var(--gold2); background: var(--gold2); color: var(--navy); font-weight: 700; }
+
+  .etapa-row {
+    display: flex; align-items: center; padding: 10px 0;
+    border-bottom: 1px solid var(--light); gap: 8px;
+  }
+  .etapa-row:last-child { border-bottom: none; }
+  .etapa-name { font-size: 0.85rem; font-weight: 500; flex: 1; }
+  .etapa-val { font-family: 'Montserrat', sans-serif; font-size: 0.95rem; min-width: 90px; text-align: right; }
+  .progress-bar { background: var(--light); border-radius: 4px; height: 6px; flex: 1; margin: 0 10px; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, var(--gold2), var(--gold3)); height: 100%; border-radius: 4px; transition: width .5s; }
+
+  .lancamento-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 11px 0; border-bottom: 1px solid var(--light);
+  }
+  .lancamento-item:last-child { border-bottom: none; }
+  .lanc-date { font-size: 0.72rem; color: var(--gray); min-width: 44px; padding-top: 2px; }
+  .lanc-info { flex: 1; }
+  .lanc-desc { font-size: 0.88rem; font-weight: 500; }
+  .lanc-sub { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+  .lanc-val { font-weight: 600; font-size: 0.92rem; color: var(--green); white-space: nowrap; }
+  .lanc-del { background: none; border: none; cursor: pointer; color: var(--gray); font-size: 1rem; padding: 0 4px; }
+  .lanc-del:hover { color: var(--red); }
+
+  .etapa-badge {
+    font-size: 0.68rem; font-weight: 600; padding: 2px 7px;
+    border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-mat { background: #e8f0ff; color: #2255cc; }
+  .badge-mo  { background: #fff3e0; color: #b05c00; }
+  .badge-ter { background: #e8f5e9; color: #1b5e20; }
+  .badge-ext { background: #fce4ec; color: #880e4f; }
+
+  .empty { text-align: center; padding: 32px 16px; color: var(--gray); font-size: 0.9rem; }
+  .empty .icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+  .divider { border: none; border-top: 1px solid var(--light); margin: 14px 0; }
+
+  .emp-card {
+    background: var(--white); border-radius: 12px; padding: 16px;
+    margin-bottom: 10px; box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .emp-info { flex: 1; }
+  .emp-info strong { font-size: 0.95rem; display: block; }
+  .emp-info span { font-size: 0.78rem; color: var(--gray); }
+
+  @media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .span2 { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <span>CARREGANDO...</span>
+</div>
+
+<header>
+  <div class="logo-wrap">
+    <svg class="logo-icon" viewBox="0 0 44 44" fill="none">
+      <polygon points="22,4 38,36 6,36" fill="none" stroke="url(#g1)" stroke-width="2.5"/>
+      <polygon points="22,13 32,33 12,33" fill="url(#g2)" opacity="0.85"/>
+      <polygon points="22,13 28,26 16,26" fill="url(#g3)" opacity="0.6"/>
+      <defs>
+        <linearGradient id="g1" x1="6" y1="4" x2="38" y2="36"><stop offset="0%" stop-color="#f0cc70"/><stop offset="100%" stop-color="#b8942a"/></linearGradient>
+        <linearGradient id="g2" x1="12" y1="13" x2="32" y2="33"><stop offset="0%" stop-color="#d4ad45"/><stop offset="100%" stop-color="#8a6a10"/></linearGradient>
+        <linearGradient id="g3" x1="16" y1="13" x2="28" y2="26"><stop offset="0%" stop-color="#f5d978"/><stop offset="100%" stop-color="#c9a030"/></linearGradient>
+      </defs>
+    </svg>
+    <div class="logo-text">
+      <span class="logo-name">ALPHAFOZ</span>
+      <span class="logo-sub">Empreendimentos</span>
+    </div>
+  </div>
+  <div id="obraHeaderBadge" class="obra-header-badge" style="display:none"></div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('dashboard',this)">📊 Resumo</button>
+  <button onclick="showPage('lancar',this)">➕ Lançar</button>
+  <button onclick="showPage('lancamentos',this)">📋 Lançamentos</button>
+  <button onclick="showPage('etapas',this)">🏗️ Por Etapa</button>
+  <button onclick="showPage('obras',this)">🏢 Obras</button>
+  <button onclick="showPage('importar',this)">📷 Importar Nota</button>
+  <button onclick="showPage('comparativo',this)">📈 Comparativo</button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="obra-selector" id="dashObraSelector"></div>
+  <div class="summary-grid" id="summaryCards"></div>
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Custo por Etapa</div>
+    <div id="etapasSummary"></div>
+  </div>
+</div>
+
+<!-- LANÇAR -->
+<div id="page-lancar" class="page">
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Novo Lançamento</div>
+    <div class="form-grid">
+      <div><label>Empreendimento</label><select id="lancObra"></select></div>
+      <div><label>Data</label><input type="date" id="lancData"></div>
+      <div class="span2"><label>Descrição</label><input type="text" id="lancDesc" placeholder="Ex: Cimento CSN 50kg..."></div>
+      <div><label>Etapa</label><select id="lancEtapa">
+        <option>Aquisição do Terreno</option>
+        <option>Projeto Arquitetônico e Complementares</option>
+        <option>Movimento de Terra e Extras</option>
+        <option>Fundação e Baldrame</option>
+        <option>Alvenaria e Elevação</option>
+        <option>Fundações e Estruturas</option>
+        <option>Esquadrias e Ferragens</option>
+        <option>Cobertura</option>
+        <option>Revestimentos</option>
+        <option>Instalação Hidráulica e Sanitária</option>
+        <option>Instalação Elétrica</option>
+        <option>Instalações do Gás GLP e Condicionadores</option>
+        <option>Pintura</option>
+        <option>Muros e Portões</option>
+        <option>Limpeza da Obra</option>
+        <option>Mão de Obra</option>
+        <option>Movimento de Terra e Extras</option>
+      </select></div>
+      <div><label>Tipo</label><select id="lancTipo">
+        <option>Material</option>
+        <option>Mão de Obra</option>
+        <option>Terreno/Taxas</option>
+        <option>Extra</option>
+      </select></div>
+      <div><label>Qtd</label><input type="number" id="lancQtd" value="1" min="1" step="any"></div>
+      <div><label>Valor Unit. (R$)</label><input type="number" id="lancUnit" placeholder="0,00" step="0.01" oninput="calcTotal()"></div>
+      <div><label>Total (R$)</label><input type="number" id="lancValor" placeholder="0,00" step="0.01" oninput="calcUnit()"></div>
+      <div><label>Referente</label><input type="text" id="lancRef" placeholder="Ex: Terra Materiais..."></div>
+    </div>
+    <hr class="divider">
+    <button class="btn btn-primary" onclick="lancar()" style="width:100%">✓ Registrar Lançamento</button>
+    <div id="lancMsg" style="margin-top:10px;text-align:center;font-size:0.85rem;"></div>
+  </div>
+</div>
+
+<!-- LANÇAMENTOS -->
+<div id="page-lancamentos" class="page">
+  <div class="obra-selector" id="listObraSelector"></div>
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Todos os Lançamentos</div>
+    <div id="lancamentosList"></div>
+  </div>
+</div>
+
+<!-- ETAPAS -->
+<div id="page-etapas" class="page">
+  <div class="obra-selector" id="etapaObraSelector"></div>
+  <div id="etapasDetalhe"></div>
+</div>
+
+<!-- OBRAS -->
+<div id="page-obras" class="page">
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Novo Empreendimento</div>
+    <div class="form-grid">
+      <div class="span2"><label>Nome da Obra</label><input type="text" id="obraName" placeholder="Ex: Vila Maria Casa 3"></div>
+      <div><label>Metragem (m²)</label><input type="number" id="obraM2" placeholder="Ex: 54"></div>
+      <div><label>Local</label><input type="text" id="obraLocal" placeholder="Ex: Foz do Iguaçu"></div>
+      <div><label>Tipo</label><select id="obraTipo">
+        <option>Residencial Unifamiliar</option><option>Residencial Multifamiliar</option>
+        <option>Comercial</option><option>Misto</option>
+      </select></div>
+      <div><label>Ano</label><input type="number" id="obraAno" placeholder="2025"></div>
+    </div>
+    <hr class="divider">
+    <button class="btn btn-primary" onclick="addObra()" style="width:100%">+ Cadastrar Obra</button>
+  </div>
+  <div id="obrasList"></div>
+</div>
+
+<!-- IMPORTAR NOTA -->
+<div id="page-importar" class="page">
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Importar Nota / Orçamento</div>
+    <p style="font-size:0.85rem;color:var(--gray);margin-bottom:16px;line-height:1.6">Cole o código gerado pelo Claude após mandar a foto da nota no chat.</p>
+    <label>Código de Importação</label>
+    <textarea id="importCode" rows="5" placeholder="Cole aqui o código ALPHAFOZ::..."></textarea>
+    <hr class="divider">
+    <div id="importPreview"></div>
+    <button class="btn btn-primary" onclick="parseImport()" style="width:100%;margin-bottom:8px">🔍 Visualizar Itens</button>
+    <button class="btn" id="btnConfirmImport" onclick="confirmImport()" style="width:100%;background:var(--green);color:white;display:none">✓ Confirmar e Lançar Tudo</button>
+    <div id="importMsg" style="margin-top:10px;text-align:center;font-size:0.85rem;"></div>
+  </div>
+  <div class="card" style="background:var(--navy);color:var(--white)">
+    <div class="card-title" style="color:var(--gold2)"><span class="dot"></span> Como usar</div>
+    <div style="font-size:0.82rem;line-height:1.9;color:rgba(255,255,255,0.75)">
+      1. Tire foto da nota ou orçamento<br>
+      2. Mande aqui no chat do Claude<br>
+      3. Fale: <em style="color:var(--gold3)">"Isso é Fundação, Vila Maria"</em><br>
+      4. Claude gera o código automaticamente<br>
+      5. Cole aqui e clique Confirmar ✓
+    </div>
+  </div>
+</div>
+
+<!-- COMPARATIVO -->
+<div id="page-comparativo" class="page">
+  <div class="card">
+    <div class="card-title"><span class="dot"></span> Comparativo de Preços por Produto</div>
+    <p style="font-size:0.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Produtos comprados mais de uma vez — compare se pagou mais caro ou mais barato.</p>
+    <input type="text" id="compSearch" placeholder="🔍 Buscar produto..." oninput="filterComp()" style="margin-bottom:12px">
+    <div id="compList"></div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const SUPABASE_URL = 'https://oososnfairagctqhdykp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vc29zbmZhaXJhZ2N0cWhkeWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTIxODAsImV4cCI6MjA5MjYyODE4MH0.oB00TrGA3tA2QbZkdPPNB6NsiyokXM4YyGK3nt83OKg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ---- STATE ----
+let obras = [];
+let lancamentos = [];
+let obraAtiva = 1;
+
+function loading(show) {
+  document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+
+function fmt(v) {
+  return 'R$' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function fmtDate(d) {
+  if (!d) return '';
+  try { const p = d.split('-'); return p[2]+'/'+p[1]; } catch(e) { return d; }
+}
+
+// ---- LOAD DATA ----
+async function loadAll() {
+  loading(true);
+  const [{ data: ob }, { data: la }] = await Promise.all([
+    sb.from('obras').select('*').order('id'),
+    sb.from('lancamentos').select('*').order('id')
+  ]);
+  obras = ob || [];
+  lancamentos = la || [];
+  if (obras.length > 0) obraAtiva = obras[0].id;
+  loading(false);
+  renderDashboard();
+  updateHeaderBadge();
+}
+
+function updateHeaderBadge() {
+  const o = obras.find(x => x.id === obraAtiva);
+  const b = document.getElementById('obraHeaderBadge');
+  if (o) { b.textContent = o.nome; b.style.display = ''; }
+}
+
+// ---- PAGES ----
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id==='dashboard') renderDashboard();
+  if (id==='lancar') renderLancarForm();
+  if (id==='lancamentos') renderLancamentos();
+  if (id==='etapas') renderEtapas();
+  if (id==='obras') renderObras();
+  if (id==='comparativo') buildComp();
+}
+
+function obraSel(containerId, cb) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = obras.map(o =>
+    '<div class="obra-chip'+(o.id===obraAtiva?' active':'')+'" onclick="setObraAtiva('+o.id+',''+containerId+'','+cb+')">'+o.nome+'</div>'
+  ).join('');
+}
+
+window.setObraAtiva = function(id, cont, cb) {
+  obraAtiva = id; updateHeaderBadge();
+  document.querySelectorAll('#'+cont+' .obra-chip').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  if (cb==='rd') renderDashboard();
+  if (cb==='rl') renderLancamentos();
+  if (cb==='re') renderEtapas();
+}
+
+// ---- DASHBOARD ----
+function renderDashboard() {
+  const c = document.getElementById('dashObraSelector');
+  c.innerHTML = obras.map(o =>
+    '<div class="obra-chip'+(o.id===obraAtiva?' active':'')+'" onclick="switchDash('+o.id+')">'+o.nome+'</div>'
+  ).join('');
+  const obra = obras.find(o=>o.id===obraAtiva);
+  if (!obra) return;
+  const la = lancamentos.filter(l=>l.obra_id===obraAtiva);
+  const mat = la.filter(l=>l.tipo==='Material').reduce((s,l)=>s+(l.valor||0),0);
+  const mo  = la.filter(l=>l.tipo==='Mão de Obra').reduce((s,l)=>s+(l.valor||0),0);
+  const ter = la.filter(l=>l.tipo==='Terreno/Taxas').reduce((s,l)=>s+(l.valor||0),0);
+  const custo = mat + mo;
+  const m2v = obra.m2 > 0 ? custo/obra.m2 : 0;
+  document.getElementById('summaryCards').innerHTML =
+    '<div class="sum-card gold"><div class="label">Custo Obra (Mat + MO)</div><div class="value">'+fmt(custo)+'</div><div class="sub">'+obra.m2+' m² · '+obra.local+'</div></div>'+
+    '<div class="sum-card"><div class="label">Custo por m²</div><div class="value">'+fmt(m2v)+'</div><div class="sub">Sem terreno · '+obra.m2+' m²</div></div>'+
+    '<div class="sum-card"><div class="label">Materiais</div><div class="value">'+fmt(mat)+'</div><div class="sub">'+(custo>0?Math.round(mat/custo*100):0)+'% do custo</div></div>'+
+    '<div class="sum-card"><div class="label">Mão de Obra</div><div class="value">'+fmt(mo)+'</div><div class="sub">Terreno: '+fmt(ter)+'</div></div>';
+
+  const etMap = {};
+  la.forEach(l=>{ if(!etMap[l.etapa]) etMap[l.etapa]=0; etMap[l.etapa]+=(l.valor||0); });
+  const ets = Object.entries(etMap).sort((a,b)=>b[1]-a[1]);
+  const maxV = ets[0]?.[1]||1;
+  document.getElementById('etapasSummary').innerHTML = ets.length===0
+    ? '<div class="empty"><span class="icon">🏗️</span>Nenhum lançamento ainda</div>'
+    : ets.map(([e,v])=>'<div class="etapa-row"><div class="etapa-name">'+e+'</div><div style="flex:1;margin:0 10px"><div class="progress-bar"><div class="progress-fill" style="width:'+Math.round(v/maxV*100)+'%"></div></div></div><div class="etapa-val">'+fmt(v)+'</div></div>').join('');
+}
+window.switchDash = function(id){ obraAtiva=id; updateHeaderBadge(); renderDashboard(); }
+
+// ---- LANÇAR ----
+function renderLancarForm() {
+  document.getElementById('lancObra').innerHTML = obras.map(o=>'<option value="'+o.id+'"'+(o.id===obraAtiva?' selected':'')+'>'+o.nome+'</option>').join('');
+  document.getElementById('lancData').value = new Date().toISOString().split('T')[0];
+}
+
+window.calcTotal = function() {
+  const q = parseFloat(document.getElementById('lancQtd').value)||1;
+  const u = parseFloat(document.getElementById('lancUnit').value)||0;
+  if (u>0) document.getElementById('lancValor').value = (q*u).toFixed(2);
+}
+window.calcUnit = function() {
+  const q = parseFloat(document.getElementById('lancQtd').value)||1;
+  const v = parseFloat(document.getElementById('lancValor').value)||0;
+  if (v>0 && q>0) document.getElementById('lancUnit').value = (v/q).toFixed(2);
+}
+
+window.lancar = async function() {
+  const obraId = parseInt(document.getElementById('lancObra').value);
+  const data = document.getElementById('lancData').value;
+  const desc = document.getElementById('lancDesc').value.trim();
+  const etapa = document.getElementById('lancEtapa').value;
+  const tipo = document.getElementById('lancTipo').value;
+  const qtd = parseFloat(document.getElementById('lancQtd').value)||1;
+  const unitario = parseFloat(document.getElementById('lancUnit').value)||0;
+  const valor = parseFloat(document.getElementById('lancValor').value)||0;
+  const ref = document.getElementById('lancRef').value.trim();
+  const msg = document.getElementById('lancMsg');
+  if (!desc||valor<=0) { msg.style.color='var(--red)'; msg.textContent='⚠️ Preencha descrição e valor.'; return; }
+  loading(true);
+  const {data: ins, error} = await sb.from('lancamentos').insert([{obra_id:obraId,data,desc,etapa,tipo,qtd,unitario:unitario||valor,valor,ref}]).select();
+  loading(false);
+  if (error) { msg.style.color='var(--red)'; msg.textContent='Erro: '+error.message; return; }
+  lancamentos.push(ins[0]);
+  obraAtiva = obraId;
+  document.getElementById('lancDesc').value='';
+  document.getElementById('lancValor').value='';
+  document.getElementById('lancUnit').value='';
+  document.getElementById('lancQtd').value='1';
+  document.getElementById('lancRef').value='';
+  msg.style.color='var(--green)'; msg.textContent='✓ '+fmt(valor)+' lançado em "'+etapa+'"';
+  setTimeout(()=>msg.textContent='',3000);
+}
+
+// ---- LANÇAMENTOS ----
+function renderLancamentos() {
+  document.getElementById('listObraSelector').innerHTML = obras.map(o=>
+    '<div class="obra-chip'+(o.id===obraAtiva?' active':'')+'" onclick="switchList('+o.id+')">'+o.nome+'</div>'
+  ).join('');
+  const la = lancamentos.filter(l=>l.obra_id===obraAtiva).slice().reverse();
+  const tc = {'Material':'badge-mat','Mão de Obra':'badge-mo','Terreno/Taxas':'badge-ter','Extra':'badge-ext'};
+  const el = document.getElementById('lancamentosList');
+  if (la.length===0) { el.innerHTML='<div class="empty"><span class="icon">📋</span>Nenhum lançamento</div>'; return; }
+  el.innerHTML = la.map(l=>{
+    const hasUnit = l.qtd&&l.qtd>1&&l.unitario;
+    return '<div class="lancamento-item">'+
+      '<div class="lanc-date">'+fmtDate(l.data)+'</div>'+
+      '<div class="lanc-info">'+
+        '<div class="lanc-desc">'+l.desc+'</div>'+
+        '<div class="lanc-sub">'+l.etapa+' &nbsp;·&nbsp; <span class="etapa-badge '+(tc[l.tipo]||'badge-ext')+'">'+l.tipo+'</span>'+
+        (hasUnit?' <span style="font-size:0.7rem;color:var(--gray)">'+l.qtd+' '+(l.unid||'un')+' × R$'+(l.unitario||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>':'')+
+        (l.ref?' · '+l.ref:'')+'</div>'+
+      '</div>'+
+      '<div class="lanc-val">'+fmt(l.valor)+'</div>'+
+      '<button class="lanc-del" onclick="delLanc('+l.id+')">✕</button>'+
+    '</div>';
+  }).join('');
+}
+window.switchList = function(id){ obraAtiva=id; renderLancamentos(); }
+window.delLanc = async function(id) {
+  if (!confirm('Excluir este lançamento?')) return;
+  loading(true);
+  await sb.from('lancamentos').delete().eq('id',id);
+  lancamentos = lancamentos.filter(l=>l.id!==id);
+  loading(false);
+  renderLancamentos();
+}
+
+// ---- ETAPAS ----
+function renderEtapas() {
+  document.getElementById('etapaObraSelector').innerHTML = obras.map(o=>
+    '<div class="obra-chip'+(o.id===obraAtiva?' active':'')+'" onclick="switchEtapa('+o.id+')">'+o.nome+'</div>'
+  ).join('');
+  const obra = obras.find(o=>o.id===obraAtiva);
+  const la = lancamentos.filter(l=>l.obra_id===obraAtiva);
+  const etMap = {};
+  la.forEach(l=>{ if(!etMap[l.etapa]) etMap[l.etapa]=[]; etMap[l.etapa].push(l); });
+  const tc = {'Material':'badge-mat','Mão de Obra':'badge-mo','Terreno/Taxas':'badge-ter','Extra':'badge-ext'};
+  const el = document.getElementById('etapasDetalhe');
+  if (Object.keys(etMap).length===0) { el.innerHTML='<div class="card"><div class="empty"><span class="icon">🏗️</span>Nenhum lançamento</div></div>'; return; }
+  el.innerHTML = Object.entries(etMap).map(([etapa,items])=>{
+    const total = items.reduce((s,i)=>s+(i.valor||0),0);
+    const isTerr = etapa==='Aquisição do Terreno';
+    const m2v = (!isTerr&&obra&&obra.m2>0)?(total/obra.m2).toFixed(0):'—';
+    return '<div class="card">'+
+      '<div class="card-title"><span class="dot"></span>'+etapa+' <span style="margin-left:auto;font-size:0.8rem;color:var(--gray)">R$'+m2v+'/m²</span></div>'+
+      items.map(l=>{
+        const hasUnit = l.qtd&&l.qtd>1&&l.unitario;
+        return '<div class="lancamento-item">'+
+          '<div class="lanc-date">'+fmtDate(l.data)+'</div>'+
+          '<div class="lanc-info">'+
+            '<div class="lanc-desc">'+l.desc+'</div>'+
+            '<div class="lanc-sub"><span class="etapa-badge '+(tc[l.tipo]||'badge-ext')+'">'+l.tipo+'</span>'+
+            (hasUnit?' <span style="font-size:0.7rem;color:var(--gray)">'+l.qtd+' '+(l.unid||'un')+' × R$'+(l.unitario||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'</span>':'')+
+            (l.ref?' · '+l.ref:'')+'</div>'+
+          '</div>'+
+          '<div class="lanc-val">'+fmt(l.valor)+'</div>'+
+        '</div>';
+      }).join('')+
+      '<hr class="divider"><div style="display:flex;justify-content:space-between;font-weight:600;font-size:0.92rem"><span>Total '+etapa+'</span><span>'+fmt(total)+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+window.switchEtapa = function(id){ obraAtiva=id; renderEtapas(); }
+
+// ---- OBRAS ----
+function renderObras() {
+  const el = document.getElementById('obrasList');
+  el.innerHTML = obras.map(o=>{
+    const la = lancamentos.filter(l=>l.obra_id===o.id);
+    const mat = la.filter(l=>l.tipo==='Material').reduce((s,l)=>s+(l.valor||0),0);
+    const mo  = la.filter(l=>l.tipo==='Mão de Obra').reduce((s,l)=>s+(l.valor||0),0);
+    const custo = mat+mo;
+    const m2v = o.m2>0?Math.round(custo/o.m2):0;
+    return '<div class="emp-card">'+
+      '<div style="font-size:1.6rem">🏗️</div>'+
+      '<div class="emp-info"><strong>'+o.nome+'</strong><span>'+o.tipo+' · '+o.m2+' m² · '+o.local+'</span>'+
+      '<div style="margin-top:4px;font-size:0.75rem;color:var(--gray)">Custo obra: '+fmt(custo)+' &nbsp;·&nbsp; R$'+m2v.toLocaleString('pt-BR')+'/m²</div></div>'+
+      '<button class="btn btn-danger" onclick="delObra('+o.id+')">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+window.addObra = async function() {
+  const nome = document.getElementById('obraName').value.trim();
+  const m2 = parseFloat(document.getElementById('obraM2').value)||0;
+  const local = document.getElementById('obraLocal').value.trim();
+  const tipo = document.getElementById('obraTipo').value;
+  const ano = parseInt(document.getElementById('obraAno').value)||new Date().getFullYear();
+  if (!nome) { alert('Informe o nome.'); return; }
+  loading(true);
+  const {data:ins} = await sb.from('obras').insert([{nome,m2,local,tipo,ano}]).select();
+  obras.push(ins[0]);
+  loading(false);
+  document.getElementById('obraName').value='';
+  document.getElementById('obraM2').value='';
+  document.getElementById('obraLocal').value='';
+  renderObras();
+}
+
+window.delObra = async function(id) {
+  if (!confirm('Excluir obra e todos os lançamentos?')) return;
+  loading(true);
+  await sb.from('obras').delete().eq('id',id);
+  obras = obras.filter(o=>o.id!==id);
+  lancamentos = lancamentos.filter(l=>l.obra_id!==id);
+  if (obraAtiva===id) obraAtiva = obras[0]?.id||null;
+  loading(false);
+  renderObras();
+}
+
+// ---- IMPORTAR NOTA ----
+let importBuffer = null;
+window.parseImport = function() {
+  const raw = document.getElementById('importCode').value.trim();
+  const msg = document.getElementById('importMsg');
+  const preview = document.getElementById('importPreview');
+  const btn = document.getElementById('btnConfirmImport');
+  if (!raw) { msg.style.color='var(--red)'; msg.textContent='⚠️ Cole o código primeiro.'; return; }
+  try {
+    const jsonStr = raw.includes('ALPHAFOZ::') ? raw.split('ALPHAFOZ::')[1] : raw;
+    const data = JSON.parse(jsonStr);
+    importBuffer = data;
+    const total = data.itens.reduce((s,i)=>s+(i.valor||0),0);
+    const tc = {'Material':'badge-mat','Mão de Obra':'badge-mo','Terreno/Taxas':'badge-ter','Extra':'badge-ext'};
+    preview.innerHTML = '<div style="background:var(--cream);border-radius:10px;padding:14px;margin-bottom:12px">'+
+      '<div style="font-weight:600;margin-bottom:4px">📋 '+data.fornecedor+' — '+data.etapa+'</div>'+
+      '<div style="font-size:0.78rem;color:var(--gray);margin-bottom:12px">Obra: '+data.obra+'</div>'+
+      data.itens.map(i=>'<div class="lancamento-item"><div class="lanc-info"><div class="lanc-desc">'+i.desc+'</div>'+
+        '<div class="lanc-sub">'+i.qtd+' '+(i.unid||'un')+' × R$'+(i.unitario||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+' <span class="etapa-badge '+(tc[i.tipo]||'badge-mat')+'">'+i.tipo+'</span></div></div>'+
+        '<div class="lanc-val">R$'+(i.valor||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>').join('')+
+      '<hr class="divider"><div style="display:flex;justify-content:space-between;font-weight:700"><span>'+data.itens.length+' itens</span><span style="color:var(--green)">'+fmt(total)+'</span></div></div>';
+    btn.style.display='block'; msg.textContent='';
+  } catch(e) {
+    msg.style.color='var(--red)'; msg.textContent='⚠️ Código inválido.'; btn.style.display='none';
+  }
+}
+
+window.confirmImport = async function() {
+  if (!importBuffer) return;
+  const data = importBuffer;
+  const obra = obras.find(o=>o.nome===data.obra)||obras.find(o=>o.id===obraAtiva);
+  if (!obra) { document.getElementById('importMsg').textContent='⚠️ Obra não encontrada.'; return; }
+  loading(true);
+  const rows = data.itens.map(i=>{
+    const etapa = data.etapa==='MULTIPLAS' ? i.etapa : data.etapa;
+    return {obra_id:obra.id, data:i.data||data.data||new Date().toISOString().split('T')[0],
+      desc:i.desc+(i.qtd>1?' ('+i.qtd+' '+(i.unid||'un')+')':''),
+      etapa, tipo:i.tipo||'Material', qtd:i.qtd||1,
+      unitario:i.unitario||i.valor, valor:i.valor, ref:data.fornecedor||''};
+  });
+  const {data:ins} = await sb.from('lancamentos').insert(rows).select();
+  lancamentos = [...lancamentos, ...(ins||[])];
+  obraAtiva = obra.id;
+  loading(false);
+  const total = data.itens.reduce((s,i)=>s+(i.valor||0),0);
+  document.getElementById('importMsg').style.color='var(--green)';
+  document.getElementById('importMsg').textContent='✓ '+data.itens.length+' itens lançados — '+fmt(total);
+  document.getElementById('btnConfirmImport').style.display='none';
+  document.getElementById('importCode').value='';
+  document.getElementById('importPreview').innerHTML='';
+  importBuffer=null;
+}
+
+// ---- COMPARATIVO ----
+let compData = [];
+function normalizeDesc(d) {
+  return (d||'').toLowerCase().replace(/\d+\s*(un|kg|m3|m²|lt|ml|saco|sc)/gi,'').replace(/\s+/g,' ').trim().substring(0,35);
+}
+function buildComp() {
+  try {
+    const mats = lancamentos.filter(l=>l.tipo==='Material'&&l.valor>0);
+    const grupos = {};
+    mats.forEach(l=>{ const k=normalizeDesc(l.desc); if(!grupos[k]) grupos[k]=[]; grupos[k].push(l); });
+    compData = Object.keys(grupos).filter(k=>grupos[k].length>=2).map(k=>{
+      const items = grupos[k];
+      const precos = items.map(i=>(i.qtd&&i.qtd>1&&i.unitario)?i.unitario:i.valor);
+      const media = precos.reduce((a,b)=>a+b,0)/precos.length;
+      const min = Math.min(...precos); const max = Math.max(...precos);
+      const variacao = min>0?Math.round((max-min)/min*100):0;
+      return {key:k, items:items.map((i,idx)=>Object.assign({},i,{precoComp:precos[idx]})), media, min, max, variacao};
+    }).sort((a,b)=>b.variacao-a.variacao);
+    renderCompList(compData);
+  } catch(e) {
+    document.getElementById('compList').innerHTML='<div class="empty"><span class="icon">⚠️</span>'+e.message+'</div>';
+  }
+}
+function renderCompList(data) {
+  const el = document.getElementById('compList');
+  if (!data||data.length===0) { el.innerHTML='<div class="empty"><span class="icon">📊</span>Nenhum produto comprado mais de uma vez ainda</div>'; return; }
+  el.innerHTML = data.map(g=>{
+    const sorted = g.items.slice().sort((a,b)=>new Date(a.data)-new Date(b.data));
+    const vc = g.variacao>20?'var(--red)':g.variacao>0?'var(--gold2)':'var(--green)';
+    const rows = sorted.map(l=>{
+      const isMin=l.precoComp===g.min; const isMax=l.precoComp===g.max;
+      const on = (obras.find(o=>o.id===l.obra_id)||{}).nome||'';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--light)">'+
+        '<div style="font-size:0.72rem;color:var(--gray);min-width:44px">'+fmtDate(l.data)+'</div>'+
+        '<div style="flex:1;font-size:0.75rem;color:var(--gray)">'+on+'</div>'+
+        '<div style="font-weight:700;font-size:0.88rem;min-width:80px;text-align:right;color:'+(isMin?'var(--green)':isMax?'var(--red)':'var(--navy)')+'">'+
+          'R$'+(l.precoComp||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+(isMin?' ✓':isMax?' ↑':'')+'</div></div>';
+    }).join('');
+    return '<div style="border:1px solid var(--light);border-radius:10px;padding:14px;margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'+
+        '<div style="font-weight:600;font-size:0.88rem;flex:1">'+sorted[0].desc+'</div>'+
+        '<div style="text-align:right;margin-left:8px"><div style="font-size:0.7rem;color:var(--gray)">Variação</div>'+
+        '<div style="font-weight:700;color:'+vc+'">'+g.variacao+'%</div></div></div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">'+
+        '<div style="background:rgba(30,107,72,0.1);color:var(--green);border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:600">✓ Mín R$'+(g.min||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'+
+        '<div style="background:rgba(176,48,32,0.1);color:var(--red);border-radius:6px;padding:4px 10px;font-size:0.75rem;font-weight:600">↑ Máx R$'+(g.max||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>'+
+        '<div style="background:var(--light);color:var(--gray);border-radius:6px;padding:4px 10px;font-size:0.75rem">Média R$'+(g.media||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'+
+      rows+'</div>';
+  }).join('');
+}
+window.filterComp = function() {
+  const q = (document.getElementById('compSearch').value||'').toLowerCase().trim();
+  if (!q) { renderCompList(compData); return; }
+  renderCompList(compData.filter(g=>g.items[0].desc.toLowerCase().includes(q)));
+}
+
+
+// ---- MIGRATION: seeds data on first run ----
+const SEED_OBRAS = [{"nome": "Vila Maria Casa 3", "m2": 54, "local": "Foz do Iguaçu - R. Genesio Rorato 215", "tipo": "Residencial Unifamiliar", "ano": 2025}, {"nome": "Jardim das Águas", "m2": 250, "local": "Foz do Iguaçu - R. Cedro 52", "tipo": "Residencial Unifamiliar", "ano": 2025}];
+const SEED_LANCS = [{"old_obra_id": 1, "data": "2026-02-23", "desc": "Madeiras e colunas material fundação", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-24", "desc": "Perfuracao Brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 504.0, "valor": 504.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-24", "desc": "Copias Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 77.0, "valor": 77.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-24", "desc": "Cimento, cal e call liquido", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2564.0, "valor": 2564.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1450.0, "valor": 1450.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Brita 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1200.0, "valor": 1200.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Tilojo 9x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4050.0, "valor": 4050.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Mangueira e conectores, isopor, e chave", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 231.0, "valor": 231.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Encerramento Mei", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-02", "desc": "Impermeabilizante Baldrame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 313.0, "valor": 313.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-27", "desc": "Churrasco Fundacao", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-03", "desc": "Taxa Abertura CNPJ", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-06", "desc": "Parafuso 20cm caixaria", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-09", "desc": "Encanamento esgoto e cimento", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2270.0, "valor": 2270.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-09", "desc": "Mensalidade container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 270.0, "valor": 270.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-09", "desc": "Fechadura portão casa do meio", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 240.0, "valor": 240.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-11", "desc": "Veda trinca", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 184.0, "valor": 184.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-11", "desc": "Retoques fissuras casa 2 e 3", "etapa": "Pintura", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1700.0, "valor": 1700.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-12", "desc": "Coluna pronta laje, mangueiras corrugadas", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2000.0, "valor": 2000.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-16", "desc": "Madeiramento escoramento laje", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1085.0, "valor": 1085.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-18", "desc": "Laje 54m2 e escoras", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3750.0, "valor": 3750.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-18", "desc": "Microondas e ventilador queimados casa 1", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 843.0, "valor": 843.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-18", "desc": "Concreto laje 7m3", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4848.0, "valor": 4848.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-18", "desc": "Vibrador aluguel", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 100.0, "valor": 100.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-19", "desc": "Tijolos 1500", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1680.0, "valor": 1680.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-20", "desc": "Ben hur adiantar escritura", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-30", "desc": "Contabilidade", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 200.0, "valor": 200.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-30", "desc": "Tubos e conexoes", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3000.0, "valor": 3000.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-21", "desc": "Infra Ar condicionado 40%", "etapa": "Instalações do Gás GLP e Condicionadores", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 790.0, "valor": 790.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-21", "desc": "Container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 560.0, "valor": 560.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-24", "desc": "Areia 7m3", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 945.0, "valor": 945.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-24", "desc": "Carga de terra", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 350.0, "valor": 350.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-24", "desc": "Cimento e call", "etapa": "Revestimentos", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3017.0, "valor": 3017.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-02-07", "desc": "Entrada 10%", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4000.0, "valor": 4000.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "Fundacao e baldrames", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4500.0, "valor": 4500.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-06", "desc": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1800.0, "valor": 1800.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-09", "desc": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-13", "desc": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2100.0, "valor": 2100.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-13", "desc": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2200.0, "valor": 2200.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-19", "desc": "Acerto alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2800.0, "valor": 2800.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-03-28", "desc": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1240.0, "valor": 1240.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-24", "desc": "Diárias Osmar", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 840.0, "valor": 840.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-04-24", "desc": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "Sinal de negocio 10% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 6333.33, "valor": 6333.33, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "Taxa Escrivão (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 14.33, "valor": 14.33, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-07-02", "desc": "Escritura + Certidões (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 657.87, "valor": 657.87, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-11-02", "desc": "ITBI 2% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1266.67, "valor": 1266.67, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-11-02", "desc": "Pagamento saldo integral (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 57000.0, "valor": 57000.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-12-02", "desc": "Registro de imovel (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 441.72, "valor": 441.72, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "IPTU Fevereiro e Marco (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 272.0, "valor": 272.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-05-05", "desc": "IPTU Abril (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 125.67, "valor": 125.67, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "IPTU Maio (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2026-01-01", "desc": "IPTU Julho e Agosto (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 255.0, "valor": 255.0, "ref": "Importação Diário"}, {"old_obra_id": 1, "data": "2025-01-10", "desc": "IPTU Setembro (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2025-09-16", "desc": "Pagamento comissao Permuta terrenos", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 20000.0, "valor": 20000.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2025-10-02", "desc": "Pagamento 50% Projeto", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5900.0, "valor": 5900.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-01-26", "desc": "Limpeza Terreno", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2700.0, "valor": 2700.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-02-11", "desc": "Abertura CNPJ Empresa", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1341.0, "valor": 1341.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-02-23", "desc": "Topografia 2 terrenos", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-02-27", "desc": "Padrao 2 caixas 1 completa e outra somente caixa", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1662.0, "valor": 1662.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-09", "desc": "Mao de obra padrão Copel", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-17", "desc": "Material gabarito", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1610.0, "valor": 1610.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-18", "desc": "Escrituras terrenos", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 3263.0, "valor": 3263.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-18", "desc": "ART Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 217.0, "valor": 217.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-18", "desc": "Taxa Escrivao", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 126.0, "valor": 126.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-25", "desc": "Material fundacao vigas, cimento e arame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 11990.0, "valor": 11990.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-25", "desc": "Furacao de brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3388.0, "valor": 3388.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-30", "desc": "Tabuas caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4600.0, "valor": 4600.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-30", "desc": "Tijolos 14x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 14850.0, "valor": 14850.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-31", "desc": "Tijolos 11x14x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3200.0, "valor": 3200.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-01", "desc": "Areia e brita", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2390.0, "valor": 2390.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-01", "desc": "Parafusos Caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 549.0, "valor": 549.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-09", "desc": "Camera Wifii", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 750.0, "valor": 750.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-10", "desc": "Cimento Votoram", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3162.0, "valor": 3162.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-16", "desc": "Tijolo 11,5x19x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-16", "desc": "Material Hidrossanitario", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5110.0, "valor": 5110.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-21", "desc": "Tijolos 11,5x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6216.0, "valor": 6216.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-21", "desc": "Tx Alvara", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 152.51, "valor": 152.51, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-24", "desc": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1550.0, "valor": 1550.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-24", "desc": "Colunas 10mm 7x20", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2548.0, "valor": 2548.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-02-16", "desc": "Entrada", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3500.0, "valor": 3500.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-25", "desc": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-28", "desc": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-03-31", "desc": "Adiantamento Fundação", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-01", "desc": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1620.0, "valor": 1620.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-02", "desc": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 7000.0, "valor": 7000.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-20", "desc": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 183.0, "valor": 183.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-24", "desc": "Saldo fundação e início alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3360.0, "valor": 3360.0, "ref": "Importação Diário"}, {"old_obra_id": 2, "data": "2026-04-24", "desc": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}];
+
+async function runMigration() {
+  // Check if already migrated
+  const {data: existing} = await sb.from('obras').select('id').limit(1);
+  if (existing && existing.length > 0) {
+    console.log('Already migrated, skipping.');
+    return;
+  }
+  console.log('Running first-time migration...');
+  // Insert obras
+  const {data: obrasDb} = await sb.from('obras').insert(SEED_OBRAS).select();
+  if (!obrasDb) return;
+  // Build old->new id map (assume same order)
+  const idMap = {};
+  [1, 2].forEach((oldId, i) => {
+    idMap[oldId] = obrasDb[i].id;
+  });
+  // Insert lancamentos in batches
+  const rows = SEED_LANCS.map(l => {
+    const {old_obra_id, ...rest} = l;
+    return {...rest, obra_id: idMap[old_obra_id] || old_obra_id};
+  });
+  for (let i=0; i<rows.length; i+=50) {
+    await sb.from('lancamentos').insert(rows.slice(i,i+50));
+  }
+  console.log('Migration complete!');
+}
+
+async function init() {
+  await runMigration();
+  await loadAll();
+}
+
+// ---- INIT ----
+init();
+</script>
+</body>
+</html>
