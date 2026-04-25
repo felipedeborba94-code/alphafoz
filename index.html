@@ -233,7 +233,7 @@ function sel(contId, fn){
   if(!c)return;
   c.innerHTML=obras.map(function(o){
     return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+contId+'\',\''+fn+'\')">'+o.nome+'</div>';
-}).join('');
+  }).join('');
 }
  
 window.setObra=function(id){
@@ -527,5 +527,7 @@ async function init(){
  
 init();
 </script>
+</body>
+</html>
 </body>
 </html>
