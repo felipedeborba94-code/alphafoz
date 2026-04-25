@@ -232,8 +232,7 @@ function sel(contId, fn){
   var c=document.getElementById(contId);
   if(!c)return;
   c.innerHTML=obras.map(function(o){
-    return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',''+contId+'',''+fn+'')">'+o.nome+'</div>';
-  }).join('');
+    return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+contId+'\',\''+fn+'\')">'+o.nome+'</div>';
 }
  
 window.setObra=function(id,cont,fn){
