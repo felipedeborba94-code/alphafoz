@@ -265,6 +265,19 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 
   <!-- RECEBIMENTOS -->
   <div id="cxpanel-receber" style="display:none">
+
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Importar Parcelas em Lote</div>
+      <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cole o código ALPHAFOZ-REC:: gerado pelo Claude para lançar várias parcelas de uma vez.</p>
+      <label>Código de Importação</label>
+      <textarea id="rec-import-code" rows="4" placeholder="ALPHAFOZ-REC::..."></textarea>
+      <hr>
+      <div id="rec-import-prev"></div>
+      <button class="btn bp" onclick="parseRecImport()" style="width:100%;margin-bottom:8px">🔍 Visualizar</button>
+      <button class="btn" id="rec-import-btn" onclick="confirmRecImport()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Lançar</button>
+      <div id="rec-import-msg" style="margin-top:8px;text-align:center;font-size:.85rem"></div>
+    </div>
+
     <div class="card">
       <div class="ct"><span class="dot"></span>Novo Recebimento</div>
       <div class="fg">
@@ -953,6 +966,58 @@ function renderRecebimentos(){
     h+='<div class="li"><div class="ld">'+fdate(r.data)+'</div><div class="li_i"><div class="li_d">'+(r.descricao||'')+'</div><div class="li_s">'+on+' · <span class="eb bm">'+r.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(r.valor)+'</div><button class="li_x" onclick="delRec('+r.id+')">✕</button></div>';
   }
   el.innerHTML=h;
+}
+
+var recImportBuf = null;
+
+function parseRecImport(){
+  var raw = document.getElementById('rec-import-code').value.trim();
+  var msg = document.getElementById('rec-import-msg');
+  var prev = document.getElementById('rec-import-prev');
+  var btn = document.getElementById('rec-import-btn');
+  if(!raw){ msg.style.color='var(--red)'; msg.textContent='Cole o código primeiro.'; return; }
+  try{
+    var js = raw.indexOf('ALPHAFOZ-REC::')>=0 ? raw.split('ALPHAFOZ-REC::')[1] : raw;
+    var d = JSON.parse(js);
+    recImportBuf = d;
+    var tot = d.itens.reduce(function(s,i){ return s+(i.valor||0); },0);
+    var h = '<div style="background:var(--cream);border-radius:10px;padding:14px;margin-bottom:12px">';
+    h += '<div style="font-weight:600;margin-bottom:4px">📥 '+d.obra+'</div>';
+    h += '<div style="font-size:.75rem;color:var(--gray);margin-bottom:10px">'+d.itens.length+' parcelas</div>';
+    d.itens.forEach(function(i){
+      h += '<div class="li"><div class="ld">'+fdate(i.data)+'</div><div class="li_i"><div class="li_d">'+i.desc+'</div><div class="li_s"><span class="eb bm">'+i.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(i.valor)+'</div></div>';
+    });
+    h += '<hr><div style="display:flex;justify-content:space-between;font-weight:700"><span>'+d.itens.length+' parcelas</span><span style="color:var(--green)">'+fmt(tot)+'</span></div></div>';
+    prev.innerHTML = h;
+    btn.style.display = 'block';
+    msg.textContent = '';
+  } catch(e){
+    msg.style.color='var(--red)'; msg.textContent='Código inválido: '+e.message;
+    btn.style.display='none';
+  }
+}
+
+async function confirmRecImport(){
+  if(!recImportBuf) return;
+  var d = recImportBuf;
+  var obra = obras.find(function(o){ return o.nome===d.obra; });
+  if(!obra){ document.getElementById('rec-import-msg').textContent='Obra não encontrada: '+d.obra; return; }
+  loading(true);
+  var rows = d.itens.map(function(i){
+    return { obra_id: obra.id, data: i.data, descricao: i.desc, tipo: i.tipo, valor: i.valor };
+  });
+  var r = await sb.from('recebimentos').insert(rows).select();
+  if(r.data) recebimentos = recebimentos.concat(r.data);
+  loading(false);
+  var tot = d.itens.reduce(function(s,i){ return s+(i.valor||0); },0);
+  document.getElementById('rec-import-msg').style.color='var(--green)';
+  document.getElementById('rec-import-msg').textContent='✓ '+d.itens.length+' parcelas lançadas — '+fmt(tot);
+  document.getElementById('rec-import-btn').style.display='none';
+  document.getElementById('rec-import-code').value='';
+  document.getElementById('rec-import-prev').innerHTML='';
+  recImportBuf=null;
+  renderRecebimentos();
+  renderCxCards();
 }
 
 async function addRecebimento(){
