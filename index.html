@@ -232,17 +232,20 @@ function sel(contId, fn){
   var c=document.getElementById(contId);
   if(!c)return;
   c.innerHTML=obras.map(function(o){
-    return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+contId+'\',\''+fn+'\')">'+o.nome+'</div>';
+    return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+fn+'\',this)">'+o.nome+'</div>';
   }).join('');
 }
  
-window.setObra=function(id){
-  obraId=id;updateBadge();
-  var btn=event.target;
-  var cont=btn.getAttribute('data-cont');
-  var fn=btn.getAttribute('data-fn');
-  document.querySelectorAll('#'+cont+' .oc').forEach(function(c){c.classList.remove('active');});
-  btn.classList.add('active');
+window.setObra=function(id,fn,el){
+  obraId=id;
+  updateBadge();
+
+  document.querySelectorAll('.oc').forEach(function(c){
+    c.classList.remove('active');
+  });
+
+  if(el) el.classList.add('active');
+
   if(fn==='d')renderDash();
   if(fn==='l')renderLancs();
   if(fn==='e')renderEtapas();
