@@ -63,7 +63,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold2);b
 .pf{background:linear-gradient(90deg,var(--gold2),var(--gold3));height:100%;border-radius:4px;transition:width .5s}
 .li{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--light)}
 .li:last-child{border-bottom:none}
-.ld{font-size:.72rem;color:var(--gray);min-width:44px;padding-top:2px}
+.ld{font-size:.72rem;color:var(--gray);min-width:80px;padding-top:2px}
 .li_i{flex:1}
 .li_d{font-size:.88rem;font-weight:500}
 .li_s{font-size:.75rem;color:var(--gray);margin-top:2px}
@@ -263,7 +263,7 @@ function loading(v){ document.getElementById('overlay').style.display = v ? 'fle
 function showErr(m){ var e=document.getElementById('errmsg'); e.textContent=m; e.style.display='block'; document.getElementById('loadtxt').style.display='none'; }
 
 function fmt(v){ return 'R$'+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
-function fdate(d){ if(!d) return ''; try{ var p=d.split('-'); return p[2]+'/'+p[1]; } catch(e){ return d; } }
+function fdate(d){ if(!d) return ''; try{ var p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } catch(e){ return d; } }
 function badgeCls(t){ var m={'Material':'bm','Mao de Obra':'bo','Mão de Obra':'bo','Terreno/Taxas':'bt','Extra':'bx'}; return m[t]||'bx'; }
 
 function updateBadge(){
@@ -390,7 +390,7 @@ async function lancar(){
 
 function renderLancs(){
   buildSel('la-sel','l');
-  var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); }).slice().reverse();
+  var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); }).slice().sort(function(a,b){ return new Date(b.data) - new Date(a.data); });
   var el=document.getElementById('la-list');
   if(la.length===0){ el.innerHTML='<div class="empty"><span class="ic">📋</span>Nenhum lançamento</div>'; return; }
   var h='';
@@ -606,7 +606,7 @@ function renderCmp(data){
       for(var k=0;k<obras.length;k++) if(Number(obras[k].id)===Number(item.l.obra_id)){ on=obras[k].nome; break; }
       var color=item.pc===g.mn?'var(--green)':item.pc===g.mx?'var(--red)':'var(--navy)';
       var tag=item.pc===g.mn?' ✓':item.pc===g.mx?' ↑':'';
-      rows+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--light)"><div style="font-size:.7rem;color:var(--gray);min-width:44px">'+fdate(item.l.data)+'</div><div style="flex:1;font-size:.73rem;color:var(--gray)">'+on+'</div><div style="font-weight:700;font-size:.85rem;min-width:80px;text-align:right;color:'+color+'">R$'+item.pc.toLocaleString('pt-BR',{minimumFractionDigits:2})+tag+'</div></div>';
+      rows+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--light)"><div style="font-size:.7rem;color:var(--gray);min-width:80px">'+fdate(item.l.data)+'</div><div style="flex:1;font-size:.73rem;color:var(--gray)">'+on+'</div><div style="font-weight:700;font-size:.85rem;min-width:80px;text-align:right;color:'+color+'">R$'+item.pc.toLocaleString('pt-BR',{minimumFractionDigits:2})+tag+'</div></div>';
     }
     h+='<div style="border:1px solid var(--light);border-radius:10px;padding:14px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="font-weight:600;font-size:.85rem;flex:1">'+(sorted[0].l.descricao||'')+'</div><div style="text-align:right;margin-left:8px"><div style="font-size:.68rem;color:var(--gray)">Variação</div><div style="font-weight:700;color:'+vc+'">'+g.v+'%</div></div></div><div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><div style="background:rgba(30,107,72,.1);color:var(--green);border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:600">Min R$'+g.mn.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div><div style="background:rgba(176,48,32,.1);color:var(--red);border-radius:6px;padding:4px 10px;font-size:.72rem;font-weight:600">Max R$'+g.mx.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div><div style="background:var(--light);color:var(--gray);border-radius:6px;padding:4px 10px;font-size:.72rem">Média R$'+g.med.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'+rows+'</div>';
   }
