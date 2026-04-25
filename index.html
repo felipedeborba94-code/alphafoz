@@ -9,10 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AlphaFoz">
 <meta name="theme-color" content="#0d1b2e">
-<link rel="manifest" href="https://alphafoz-obras.netlify.app/manifest.json">
-<link rel="apple-touch-icon" sizes="192x192" href="https://alphafoz-obras.netlify.app/icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="https://alphafoz-obras.netlify.app/icon-512.png">
-<link rel="icon" type="image/png" href="https://alphafoz-obras.netlify.app/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--navy:#0d1b2e;--navy2:#152540;--navy3:#1c3055;--gold:#b8942a;--gold2:#d4ad45;--gold3:#f0cc70;--cream:#f4f6f9;--white:#fff;--gray:#7a8fa8;--light:#e2e8f0;--green:#1e6b48;--red:#b03020;--shadow:0 4px 28px rgba(13,27,46,.14)}
@@ -99,6 +97,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <button onclick="go('importar',this)">📷 Importar</button>
 <button onclick="go('comparativo',this)">📈 Comparativo</button>
   <button onclick="go('fiscal',this)">📄 Fiscal</button>
+  <button onclick="go('caixa',this)">💰 Caixa</button>
 </nav>
 <main>
 <div id="page-dashboard" class="page active">
@@ -238,6 +237,83 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
     </div>
   </div>
 </div>
+
+<!-- CAIXA -->
+<div id="page-caixa" class="page">
+
+  <!-- RESUMO GERAL -->
+  <div class="sg" id="cx-cards"></div>
+
+  <!-- TABS internas -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn bp" id="cxtab-resumo" onclick="cxTab('resumo')" style="font-size:.8rem;padding:8px 16px">📊 Resumo</button>
+    <button class="btn" id="cxtab-receber" onclick="cxTab('receber')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">📥 Recebimentos</button>
+    <button class="btn" id="cxtab-aporte" onclick="cxTab('aporte')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">🤝 Aportes</button>
+  </div>
+
+  <!-- RESUMO -->
+  <div id="cxpanel-resumo">
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Fluxo Consolidado — Todas as Obras</div>
+      <div id="cx-fluxo"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Aportes por Sócio</div>
+      <div id="cx-socios"></div>
+    </div>
+  </div>
+
+  <!-- RECEBIMENTOS -->
+  <div id="cxpanel-receber" style="display:none">
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Novo Recebimento</div>
+      <div class="fg">
+        <div><label>Obra</label><select id="rec-obra"></select></div>
+        <div><label>Data</label><input type="date" id="rec-data"></div>
+        <div class="s2"><label>Descrição</label><input type="text" id="rec-desc" placeholder="Ex: Parcela 3 comprador João..."></div>
+        <div><label>Tipo</label><select id="rec-tipo">
+          <option>Parcela comprador</option>
+          <option>Entrada</option>
+          <option>Financiamento bancário</option>
+          <option>Sinal</option>
+          <option>Outros</option>
+        </select></div>
+        <div><label>Valor (R$)</label><input type="number" id="rec-valor" placeholder="0,00" step="0.01"></div>
+      </div>
+      <hr>
+      <button class="btn bp" onclick="addRecebimento()" style="width:100%">+ Registrar Recebimento</button>
+      <div id="rec-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Histórico de Recebimentos</div>
+      <div id="rec-list"></div>
+    </div>
+  </div>
+
+  <!-- APORTES -->
+  <div id="cxpanel-aporte" style="display:none">
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Novo Aporte</div>
+      <div class="fg">
+        <div><label>Sócio</label><select id="ap-socio">
+          <option>Felipe de Borba</option>
+          <option>Maico Pian</option>
+        </select></div>
+        <div><label>Data</label><input type="date" id="ap-data"></div>
+        <div class="s2"><label>Descrição</label><input type="text" id="ap-desc" placeholder="Ex: Aporte inicial, Aporte obras..."></div>
+        <div><label>Valor (R$)</label><input type="number" id="ap-valor" placeholder="0,00" step="0.01"></div>
+      </div>
+      <hr>
+      <button class="btn bp" onclick="addAporte()" style="width:100%">+ Registrar Aporte</button>
+      <div id="ap-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="dot"></span>Histórico de Aportes</div>
+      <div id="ap-list"></div>
+    </div>
+  </div>
+
+</div>
 </main>
 <script>
 var SURL = 'https://oososnfairagctqhdykp.supabase.co';
@@ -305,6 +381,7 @@ function go(id, btn){
   else if(id==='obras') renderObras();
   else if(id==='comparativo') buildCmp();
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
+  else if(id==='caixa') renderCaixa();
 }
 
 function renderDash(){
@@ -772,6 +849,183 @@ function imprimirFiscal(){
   win.print();
 }
 
+
+// ---- CAIXA ----
+var recebimentos = [];
+var aportes = [];
+
+function cxTab(tab){
+  var tabs = ['resumo','receber','aporte'];
+  tabs.forEach(function(t){
+    document.getElementById('cxpanel-'+t).style.display = t===tab?'block':'none';
+    var btn = document.getElementById('cxtab-'+t);
+    if(btn){
+      btn.style.background = t===tab?'var(--gold2)':'var(--light)';
+      btn.style.color = t===tab?'var(--navy)':'var(--navy)';
+    }
+  });
+  if(tab==='resumo') renderCxResumo();
+  if(tab==='receber') renderRecebimentos();
+  if(tab==='aporte') renderAportes();
+}
+
+async function renderCaixa(){
+  loading(true);
+  var r1 = await sb.from('recebimentos').select('*').order('data');
+  var r2 = await sb.from('aportes').select('*').order('data');
+  recebimentos = r1.data||[];
+  aportes = r2.data||[];
+  loading(false);
+
+  // Fill obra selector
+  document.getElementById('rec-obra').innerHTML = obras.map(function(o){
+    return '<option value="'+o.id+'">'+o.nome+'</option>';
+  }).join('');
+  document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ap-data').value = new Date().toISOString().split('T')[0];
+
+  renderCxCards();
+  renderCxResumo();
+}
+
+function renderCxCards(){
+  var totalRec = recebimentos.reduce(function(s,r){ return s+(r.valor||0); },0);
+  var totalAp  = aportes.reduce(function(s,a){ return s+(a.valor||0); },0);
+  var totalGasto = lancs.reduce(function(s,l){ return s+(l.valor||0); },0);
+  var totalEntradas = totalRec + totalAp;
+  var saldo = totalEntradas - totalGasto;
+
+  document.getElementById('cx-cards').innerHTML =
+    '<div class="sc gold"><div class="lb">Saldo Disponível</div><div class="vl">'+fmt(saldo)+'</div><div class="sb">'+(saldo>=0?'Positivo':'Negativo')+'</div></div>'+
+    '<div class="sc"><div class="lb">Total Recebido</div><div class="vl">'+fmt(totalRec)+'</div><div class="sb">Compradores</div></div>'+
+    '<div class="sc"><div class="lb">Aportes Sócios</div><div class="vl">'+fmt(totalAp)+'</div><div class="sb">Felipe + Maico</div></div>'+
+    '<div class="sc" style="'+(totalGasto>totalEntradas?'background:linear-gradient(145deg,#6b1e1e,#a03020)':'')+'"><div class="lb">Total Investido</div><div class="vl">'+fmt(totalGasto)+'</div><div class="sb">Todas as obras</div></div>';
+}
+
+function renderCxResumo(){
+  renderCxCards();
+
+  // Fluxo por obra
+  var h='';
+  for(var i=0;i<obras.length;i++){
+    var o=obras[i];
+    var gasto=lancs.filter(function(l){return Number(l.obra_id)===Number(o.id);}).reduce(function(s,l){return s+(l.valor||0);},0);
+    var recebido=recebimentos.filter(function(r){return Number(r.obra_id)===Number(o.id);}).reduce(function(s,r){return s+(r.valor||0);},0);
+    var saldo=recebido-gasto;
+    h+='<div style="padding:12px 0;border-bottom:1px solid var(--light)">';
+    h+='<div style="display:flex;justify-content:space-between;margin-bottom:6px">';
+    h+='<span style="font-weight:600;font-size:.9rem">'+o.nome+'</span>';
+    h+='<span style="font-weight:700;color:'+(saldo>=0?'var(--green)':'var(--red)')+'">'+fmt(saldo)+'</span>';
+    h+='</div>';
+    h+='<div style="display:flex;gap:16px;font-size:.78rem;color:var(--gray)">';
+    h+='<span>Recebido: <strong style="color:var(--green)">'+fmt(recebido)+'</strong></span>';
+    h+='<span>Gasto: <strong style="color:var(--red)">'+fmt(gasto)+'</strong></span>';
+    h+='</div></div>';
+  }
+  document.getElementById('cx-fluxo').innerHTML = h||'<div class="empty">Nenhum dado</div>';
+
+  // Aportes por socio
+  var socios=['Felipe de Borba','Maico Pian'];
+  var sh='';
+  for(var i=0;i<socios.length;i++){
+    var s=socios[i];
+    var total=aportes.filter(function(a){return a.socio===s;}).reduce(function(sum,a){return sum+(a.valor||0);},0);
+    var pct=aportes.reduce(function(sum,a){return sum+(a.valor||0);},0);
+    pct=pct>0?Math.round(total/pct*100):0;
+    sh+='<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--light)">';
+    sh+='<div style="font-size:1.4rem;margin-right:12px">🤝</div>';
+    sh+='<div style="flex:1"><div style="font-weight:600;font-size:.9rem">'+s+'</div>';
+    sh+='<div style="font-size:.75rem;color:var(--gray)">'+pct+'% do total aportado</div></div>';
+    sh+='<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem">'+fmt(total)+'</div>';
+    sh+='</div>';
+  }
+  document.getElementById('cx-socios').innerHTML = sh||'<div class="empty">Nenhum aporte registrado</div>';
+}
+
+function renderRecebimentos(){
+  var la = recebimentos.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
+  var el = document.getElementById('rec-list');
+  if(la.length===0){el.innerHTML='<div class="empty"><span class="ic">📥</span>Nenhum recebimento</div>';return;}
+  var h='';
+  for(var i=0;i<la.length;i++){
+    var r=la[i];
+    var on=(obras.find(function(o){return Number(o.id)===Number(r.obra_id);})||{}).nome||'';
+    h+='<div class="li"><div class="ld">'+fdate(r.data)+'</div><div class="li_i"><div class="li_d">'+(r.descricao||'')+'</div><div class="li_s">'+on+' · <span class="eb bm">'+r.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(r.valor)+'</div><button class="li_x" onclick="delRec('+r.id+')">✕</button></div>';
+  }
+  el.innerHTML=h;
+}
+
+async function addRecebimento(){
+  var obraId=parseInt(document.getElementById('rec-obra').value);
+  var data=document.getElementById('rec-data').value;
+  var descricao=document.getElementById('rec-desc').value.trim();
+  var tipo=document.getElementById('rec-tipo').value;
+  var valor=parseFloat(document.getElementById('rec-valor').value)||0;
+  var msg=document.getElementById('rec-msg');
+  if(!descricao||valor<=0){msg.style.color='var(--red)';msg.textContent='Preencha descrição e valor.';return;}
+  loading(true);
+  var r=await sb.from('recebimentos').insert([{obra_id:obraId,data:data,descricao:descricao,tipo:tipo,valor:valor}]).select();
+  if(r.data&&r.data.length>0) recebimentos.push(r.data[0]);
+  loading(false);
+  document.getElementById('rec-desc').value='';
+  document.getElementById('rec-valor').value='';
+  msg.style.color='var(--green)';msg.textContent='✓ '+fmt(valor)+' registrado!';
+  setTimeout(function(){msg.textContent='';},3000);
+  renderRecebimentos();
+  renderCxCards();
+}
+
+async function delRec(id){
+  if(!confirm('Excluir recebimento?'))return;
+  loading(true);
+  await sb.from('recebimentos').delete().eq('id',id);
+  recebimentos=recebimentos.filter(function(r){return r.id!==id;});
+  loading(false);
+  renderRecebimentos();
+  renderCxCards();
+}
+
+function renderAportes(){
+  var la=aportes.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
+  var el=document.getElementById('ap-list');
+  if(la.length===0){el.innerHTML='<div class="empty"><span class="ic">🤝</span>Nenhum aporte</div>';return;}
+  var h='';
+  for(var i=0;i<la.length;i++){
+    var a=la[i];
+    h+='<div class="li"><div class="ld">'+fdate(a.data)+'</div><div class="li_i"><div class="li_d">'+(a.descricao||'')+'</div><div class="li_s"><span class="eb bt">'+a.socio+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(a.valor)+'</div><button class="li_x" onclick="delAp('+a.id+')">✕</button></div>';
+  }
+  el.innerHTML=h;
+}
+
+async function addAporte(){
+  var socio=document.getElementById('ap-socio').value;
+  var data=document.getElementById('ap-data').value;
+  var descricao=document.getElementById('ap-desc').value.trim();
+  var valor=parseFloat(document.getElementById('ap-valor').value)||0;
+  var msg=document.getElementById('ap-msg');
+  if(!descricao||valor<=0){msg.style.color='var(--red)';msg.textContent='Preencha descrição e valor.';return;}
+  loading(true);
+  var r=await sb.from('aportes').insert([{socio:socio,data:data,descricao:descricao,valor:valor}]).select();
+  if(r.data&&r.data.length>0) aportes.push(r.data[0]);
+  loading(false);
+  document.getElementById('ap-desc').value='';
+  document.getElementById('ap-valor').value='';
+  msg.style.color='var(--green)';msg.textContent='✓ '+fmt(valor)+' aportado por '+socio+'!';
+  setTimeout(function(){msg.textContent='';},3000);
+  renderAportes();
+  renderCxCards();
+}
+
+async function delAp(id){
+  if(!confirm('Excluir aporte?'))return;
+  loading(true);
+  await sb.from('aportes').delete().eq('id',id);
+  aportes=aportes.filter(function(a){return a.id!==id;});
+  loading(false);
+  renderAportes();
+  renderCxCards();
+}
+
 async function init(){
   try{
     var ok=await migrate();
@@ -791,9 +1045,16 @@ async function init(){
   }
 }
 
+// Desregistrar service workers antigos que causam erro
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').then(function(){
-    console.log('SW registrado!');
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+}
+// Desregistrar qualquer Service Worker antigo
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(reg){ reg.unregister(); });
   });
 }
 init();
