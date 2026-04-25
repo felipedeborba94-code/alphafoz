@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AlphaFoz — Gestão de Obras</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AlphaFoz">
+<meta name="theme-color" content="#0d1b2e">
+<link rel="manifest" href="https://alphafoz-obras.netlify.app/manifest.json">
+<link rel="apple-touch-icon" sizes="192x192" href="https://alphafoz-obras.netlify.app/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="https://alphafoz-obras.netlify.app/icon-512.png">
+<link rel="icon" type="image/png" href="https://alphafoz-obras.netlify.app/icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--navy:#0d1b2e;--navy2:#152540;--navy3:#1c3055;--gold:#b8942a;--gold2:#d4ad45;--gold3:#f0cc70;--cream:#f4f6f9;--white:#fff;--gray:#7a8fa8;--light:#e2e8f0;--green:#1e6b48;--red:#b03020;--shadow:0 4px 28px rgba(13,27,46,.14)}
@@ -195,14 +203,14 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <div id="cmp-list"></div>
 </div>
 </div>
- 
+
 <!-- FISCAL -->
 <div id="page-fiscal" class="page">
   <div class="os" id="fi-sel"></div>
- 
+
   <div class="card">
     <div class="ct"><span class="dot"></span>Relatório Fiscal — Ganho de Capital</div>
- 
+
     <div class="fg">
       <div>
         <label>Valor de Venda (R$)</label>
@@ -213,12 +221,12 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
         <input type="number" id="fi-corret" placeholder="0,00" step="0.01" oninput="calcFiscal()">
       </div>
     </div>
- 
+
     <hr>
- 
+
     <div id="fi-result" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px" id="fi-cards"></div>
- 
+
       <div style="background:var(--navy);border-radius:12px;padding:20px;color:#fff;margin-bottom:16px">
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:1rem;color:var(--gold2);margin-bottom:14px">
           Detalhamento de Custos
@@ -230,10 +238,10 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
           <span id="fi-imposto" style="color:var(--gold2);font-size:1.2rem"></span>
         </div>
       </div>
- 
+
       <button class="btn bp" onclick="imprimirFiscal()" style="width:100%">🖨️ Imprimir / Salvar PDF</button>
     </div>
- 
+
     <div id="fi-msg" style="text-align:center;font-size:.85rem;color:var(--gray);margin-top:10px">
       Preencha o valor de venda para calcular.
     </div>
@@ -244,27 +252,27 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 var SURL = 'https://oososnfairagctqhdykp.supabase.co';
 var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vc29zbmZhaXJhZ2N0cWhkeWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTIxODAsImV4cCI6MjA5MjYyODE4MH0.oB00TrGA3tA2QbZkdPPNB6NsiyokXM4YyGK3nt83OKg';
 var sb = supabase.createClient(SURL, SKEY);
- 
+
 var obras = [];
 var lancs = [];
 var obraId = null;
 var impBuf = null;
 var cmpData = [];
- 
+
 function loading(v){ document.getElementById('overlay').style.display = v ? 'flex' : 'none'; }
 function showErr(m){ var e=document.getElementById('errmsg'); e.textContent=m; e.style.display='block'; document.getElementById('loadtxt').style.display='none'; }
- 
+
 function fmt(v){ return 'R$'+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function fdate(d){ if(!d) return ''; try{ var p=d.split('-'); return p[2]+'/'+p[1]; } catch(e){ return d; } }
 function badgeCls(t){ var m={'Material':'bm','Mao de Obra':'bo','Mão de Obra':'bo','Terreno/Taxas':'bt','Extra':'bx'}; return m[t]||'bx'; }
- 
+
 function updateBadge(){
   var found = null;
   for(var i=0;i<obras.length;i++){ if(Number(obras[i].id)===Number(obraId)){ found=obras[i]; break; } }
   var b = document.getElementById('hdrbadge');
   if(found){ b.textContent=found.nome; b.style.display=''; }
 }
- 
+
 function buildSel(contId, fn){
   var c = document.getElementById(contId);
   if(!c) return;
@@ -276,7 +284,7 @@ function buildSel(contId, fn){
   }
   c.innerHTML = h;
 }
- 
+
 function trocarObra(el){
   var id = Number(el.getAttribute('data-oid'));
   var cont = el.getAttribute('data-cont');
@@ -291,7 +299,7 @@ function trocarObra(el){
   else if(fn==='e') renderEtapas();
   else if(fn==='f'){ renderFiscal(); calcFiscal(); }
 }
- 
+
 function go(id, btn){
   var pages = document.querySelectorAll('.page');
   for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
@@ -307,7 +315,7 @@ function go(id, btn){
   else if(id==='comparativo') buildCmp();
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
 }
- 
+
 function renderDash(){
   buildSel('ds-sel','d');
   var found = null;
@@ -341,7 +349,7 @@ function renderDash(){
   }
   document.getElementById('ds-etapas').innerHTML = h||'<div class="empty"><span class="ic">🏗️</span>Nenhum lançamento</div>';
 }
- 
+
 function renderLancar(){
   var h='';
   for(var i=0;i<obras.length;i++){
@@ -350,10 +358,10 @@ function renderLancar(){
   document.getElementById('l-obra').innerHTML=h;
   document.getElementById('l-data').value=new Date().toISOString().split('T')[0];
 }
- 
+
 function calcT(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var u=parseFloat(document.getElementById('l-unit').value)||0; if(u>0) document.getElementById('l-total').value=(q*u).toFixed(2); }
 function calcU(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var v=parseFloat(document.getElementById('l-total').value)||0; if(v>0&&q>0) document.getElementById('l-unit').value=(v/q).toFixed(2); }
- 
+
 async function lancar(){
   var oid=parseInt(document.getElementById('l-obra').value);
   var data=document.getElementById('l-data').value;
@@ -379,7 +387,7 @@ async function lancar(){
   msg.style.color='var(--green)'; msg.textContent='Lançado: '+fmt(valor)+' em '+etapa;
   setTimeout(function(){ msg.textContent=''; },3000);
 }
- 
+
 function renderLancs(){
   buildSel('la-sel','l');
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); }).slice().reverse();
@@ -395,7 +403,7 @@ function renderLancs(){
   }
   el.innerHTML=h;
 }
- 
+
 async function delL(id){
   if(!confirm('Excluir este lançamento?')) return;
   loading(true);
@@ -406,7 +414,7 @@ async function delL(id){
   loading(false);
   renderLancs();
 }
- 
+
 function renderEtapas(){
   buildSel('et-sel','e');
   var found=null;
@@ -440,7 +448,7 @@ function renderEtapas(){
   }
   el.innerHTML=h;
 }
- 
+
 function renderObras(){
   document.getElementById('o-ano').value=document.getElementById('o-ano').value||new Date().getFullYear();
   var h='';
@@ -458,7 +466,7 @@ function renderObras(){
   }
   document.getElementById('o-list').innerHTML=h;
 }
- 
+
 async function addObra(){
   var nome=document.getElementById('o-nome').value.trim();
   var m2=parseFloat(document.getElementById('o-m2').value)||0;
@@ -475,7 +483,7 @@ async function addObra(){
   document.getElementById('o-local').value='';
   renderObras();
 }
- 
+
 async function delO(id){
   if(!confirm('Excluir obra e todos os lançamentos?')) return;
   loading(true);
@@ -488,7 +496,7 @@ async function delO(id){
   loading(false);
   renderObras();
 }
- 
+
 function parseImp(){
   var raw=document.getElementById('imp-code').value.trim();
   var msg=document.getElementById('imp-msg');
@@ -515,7 +523,7 @@ function parseImp(){
     btn.style.display='none';
   }
 }
- 
+
 async function confirmImp(){
   if(!impBuf) return;
   var d=impBuf;
@@ -553,9 +561,9 @@ async function confirmImp(){
   document.getElementById('imp-prev').innerHTML='';
   impBuf=null;
 }
- 
+
 function normD(d){ return (d||'').toLowerCase().replace(/[0-9]+(un|kg|m3|lt|ml|saco|sc)/gi,'').replace(/\s+/g,' ').trim().substring(0,35); }
- 
+
 function buildCmp(){
   var mats=lancs.filter(function(l){ return l.tipo==='Material'&&(l.valor||0)>0; });
   var g={};
@@ -582,7 +590,7 @@ function buildCmp(){
   cmpData.sort(function(a,b){ return b.v-a.v; });
   renderCmp(cmpData);
 }
- 
+
 function renderCmp(data){
   var el=document.getElementById('cmp-list');
   if(!data||data.length===0){ el.innerHTML='<div class="empty"><span class="ic">📊</span>Nenhum produto comprado mais de uma vez</div>'; return; }
@@ -604,7 +612,7 @@ function renderCmp(data){
   }
   el.innerHTML=h;
 }
- 
+
 function filterCmp(){
   var q=(document.getElementById('cmp-search').value||'').toLowerCase().trim();
   if(!q){ renderCmp(cmpData); return; }
@@ -614,12 +622,12 @@ function filterCmp(){
   }
   renderCmp(filtered);
 }
- 
+
 // SEEDS
 var OBRAS_SEED = [{"nome": "Vila Maria Casa 3", "m2": 54, "local": "Foz do Iguaçu - R. Genesio Rorato 215", "tipo": "Residencial Unifamiliar", "ano": 2025}, {"nome": "Jardim das Águas", "m2": 250, "local": "Foz do Iguaçu - R. Cedro 52", "tipo": "Residencial Unifamiliar", "ano": 2025}];
 var LANCS_SEED = [{"old_id": 1, "data": "2026-02-23", "descricao": "Madeiras e colunas material fundação", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Perfuracao Brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 504.0, "valor": 504.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Copias Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 77.0, "valor": 77.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Cimento, cal e call liquido", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2564.0, "valor": 2564.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1450.0, "valor": 1450.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Brita 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1200.0, "valor": 1200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Tilojo 9x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4050.0, "valor": 4050.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Mangueira e conectores, isopor, e chave", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 231.0, "valor": 231.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Encerramento Mei", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-02", "descricao": "Impermeabilizante Baldrame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 313.0, "valor": 313.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Churrasco Fundacao", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-03", "descricao": "Taxa Abertura CNPJ", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-06", "descricao": "Parafuso 20cm caixaria", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Encanamento esgoto e cimento", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2270.0, "valor": 2270.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Mensalidade container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 270.0, "valor": 270.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Fechadura portão casa do meio", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 240.0, "valor": 240.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-11", "descricao": "Veda trinca", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 184.0, "valor": 184.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-11", "descricao": "Retoques fissuras casa 2 e 3", "etapa": "Pintura", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1700.0, "valor": 1700.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-12", "descricao": "Coluna pronta laje, mangueiras corrugadas", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2000.0, "valor": 2000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-16", "descricao": "Madeiramento escoramento laje", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1085.0, "valor": 1085.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Laje 54m2 e escoras", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3750.0, "valor": 3750.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Microondas e ventilador queimados casa 1", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 843.0, "valor": 843.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Concreto laje 7m3", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4848.0, "valor": 4848.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Vibrador aluguel", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 100.0, "valor": 100.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-19", "descricao": "Tijolos 1500", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1680.0, "valor": 1680.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-20", "descricao": "Ben hur adiantar escritura", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-30", "descricao": "Contabilidade", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 200.0, "valor": 200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-30", "descricao": "Tubos e conexoes", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3000.0, "valor": 3000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-21", "descricao": "Infra Ar condicionado 40%", "etapa": "Instalações do Gás GLP e Condicionadores", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 790.0, "valor": 790.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-21", "descricao": "Container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 560.0, "valor": 560.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Areia 7m3", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 945.0, "valor": 945.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Carga de terra", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 350.0, "valor": 350.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Cimento e call", "etapa": "Revestimentos", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3017.0, "valor": 3017.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-07", "descricao": "Entrada 10%", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4000.0, "valor": 4000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Fundacao e baldrames", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4500.0, "valor": 4500.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-06", "descricao": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1800.0, "valor": 1800.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-13", "descricao": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2100.0, "valor": 2100.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-13", "descricao": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2200.0, "valor": 2200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-19", "descricao": "Acerto alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2800.0, "valor": 2800.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-28", "descricao": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1240.0, "valor": 1240.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Diárias Osmar", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 840.0, "valor": 840.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Sinal de negocio 10% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 6333.33, "valor": 6333.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Taxa Escrivão (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 14.33, "valor": 14.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-07-02", "descricao": "Escritura + Certidões (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 657.87, "valor": 657.87, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-11-02", "descricao": "ITBI 2% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1266.67, "valor": 1266.67, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-11-02", "descricao": "Pagamento saldo integral (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 57000.0, "valor": 57000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-12-02", "descricao": "Registro de imovel (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 441.72, "valor": 441.72, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Fevereiro e Marco (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 272.0, "valor": 272.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-05-05", "descricao": "IPTU Abril (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 125.67, "valor": 125.67, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Maio (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Julho e Agosto (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 255.0, "valor": 255.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-01-10", "descricao": "IPTU Setembro (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_id": 2, "data": "2025-09-16", "descricao": "Pagamento comissao Permuta terrenos", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 20000.0, "valor": 20000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2025-10-02", "descricao": "Pagamento 50% Projeto", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5900.0, "valor": 5900.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-01-26", "descricao": "Limpeza Terreno", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2700.0, "valor": 2700.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-11", "descricao": "Abertura CNPJ Empresa", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1341.0, "valor": 1341.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-23", "descricao": "Topografia 2 terrenos", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-27", "descricao": "Padrao 2 caixas 1 completa e outra somente caixa", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1662.0, "valor": 1662.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-09", "descricao": "Mao de obra padrão Copel", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-17", "descricao": "Material gabarito", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1610.0, "valor": 1610.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "Escrituras terrenos", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 3263.0, "valor": 3263.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "ART Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 217.0, "valor": 217.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "Taxa Escrivao", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 126.0, "valor": 126.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Material fundacao vigas, cimento e arame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 11990.0, "valor": 11990.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Furacao de brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3388.0, "valor": 3388.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-30", "descricao": "Tabuas caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4600.0, "valor": 4600.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-30", "descricao": "Tijolos 14x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 14850.0, "valor": 14850.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-31", "descricao": "Tijolos 11x14x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3200.0, "valor": 3200.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Areia e brita", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2390.0, "valor": 2390.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Parafusos Caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 549.0, "valor": 549.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-09", "descricao": "Camera Wifii", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 750.0, "valor": 750.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-10", "descricao": "Cimento Votoram", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3162.0, "valor": 3162.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-16", "descricao": "Tijolo 11,5x19x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-16", "descricao": "Material Hidrossanitario", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5110.0, "valor": 5110.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-21", "descricao": "Tijolos 11,5x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6216.0, "valor": 6216.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-21", "descricao": "Tx Alvara", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 152.51, "valor": 152.51, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1550.0, "valor": 1550.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Colunas 10mm 7x20", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2548.0, "valor": 2548.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-16", "descricao": "Entrada", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3500.0, "valor": 3500.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-28", "descricao": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-31", "descricao": "Adiantamento Fundação", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1620.0, "valor": 1620.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-02", "descricao": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 7000.0, "valor": 7000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-20", "descricao": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 183.0, "valor": 183.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Saldo fundação e início alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3360.0, "valor": 3360.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}];
 var OLD_IDS = [1, 2];
- 
+
 async function migrate(){
   var r = await sb.from('obras').select('id').limit(1);
   if(r.error){ showErr('Erro Supabase: '+r.error.message); return false; }
@@ -640,8 +648,8 @@ async function migrate(){
   }
   return true;
 }
- 
- 
+
+
 function renderFiscal(){
   buildSel('fi-sel','f');
   document.getElementById('fi-venda').value='';
@@ -649,7 +657,7 @@ function renderFiscal(){
   document.getElementById('fi-result').style.display='none';
   document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
 }
- 
+
 function calcFiscal(){
   var venda=parseFloat(document.getElementById('fi-venda').value)||0;
   var corret=parseFloat(document.getElementById('fi-corret').value)||0;
@@ -658,7 +666,7 @@ function calcFiscal(){
     document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
     return;
   }
- 
+
   // Buscar custos da obra ativa
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); });
   var mat=0,mo=0,ter=0;
@@ -671,14 +679,14 @@ function calcFiscal(){
   var custoLiquido=custoTotal+corret;
   var lucro=venda-custoLiquido;
   var ir=lucro>0?lucro*0.15:0;
- 
+
   // Cards
   document.getElementById('fi-cards').innerHTML=
     '<div class="sc gold"><div class="lb">Valor de Venda</div><div class="vl">'+fmt(venda)+'</div><div class="sb">Valor recebido pelo imóvel</div></div>'+
     '<div class="sc"><div class="lb">Custo Total</div><div class="vl">'+fmt(custoLiquido)+'</div><div class="sb">Obra + Terreno + Corretagem</div></div>'+
     '<div class="sc" style="'+(lucro>0?'background:linear-gradient(145deg,#1e4d2b,#2e7d46)':'background:linear-gradient(145deg,#6b1e1e,#a03020)')+'"><div class="lb">Lucro</div><div class="vl">'+fmt(lucro)+'</div><div class="sb">'+(lucro>0?'Ganho de capital':'Prejuízo — sem imposto')+'</div></div>'+
     '<div class="sc"><div class="lb">Alíquota IR</div><div class="vl">15%</div><div class="sb">Ganho de capital pessoa física</div></div>';
- 
+
   // Detalhes
   document.getElementById('fi-detalhes').innerHTML=
     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">Valor de Venda</span><span>'+fmt(venda)+'</span></div>'+
@@ -687,17 +695,17 @@ function calcFiscal(){
     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Mão de Obra</span><span>'+fmt(mo)+'</span></div>'+
     '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Terreno e Taxas</span><span>'+fmt(ter)+'</span></div>'+
     '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:.95rem;font-weight:600"><span>= Lucro Tributável</span><span style="color:'+(lucro>0?'#7dffb3':'#ff8a8a')+'">'+fmt(lucro)+'</span></div>';
- 
+
   document.getElementById('fi-imposto').textContent = lucro>0 ? fmt(ir) : 'R$0 (prejuízo)';
   document.getElementById('fi-result').style.display='block';
   document.getElementById('fi-msg').textContent='';
 }
- 
+
 function imprimirFiscal(){
   var obra=null;
   for(var i=0;i<obras.length;i++) if(Number(obras[i].id)===Number(obraId)){ obra=obras[i]; break; }
   if(!obra) return;
- 
+
   var venda=parseFloat(document.getElementById('fi-venda').value)||0;
   var corret=parseFloat(document.getElementById('fi-corret').value)||0;
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); });
@@ -711,7 +719,7 @@ function imprimirFiscal(){
   var lucro=venda-custo;
   var ir=lucro>0?lucro*0.15:0;
   var hoje=new Date().toLocaleDateString('pt-BR');
- 
+
   var win=window.open('','_blank');
   win.document.write('<html><head><meta charset="UTF-8"><title>Relatório Fiscal — '+obra.nome+'</title><style>');
   win.document.write('body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#1a1a2e;padding:20px}');
@@ -742,7 +750,7 @@ function imprimirFiscal(){
   win.document.close();
   win.print();
 }
- 
+
 async function init(){
   try{
     var ok=await migrate();
@@ -761,7 +769,12 @@ async function init(){
     showErr('Erro: '+e.message);
   }
 }
- 
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').then(function(){
+    console.log('SW registrado!');
+  });
+}
 init();
 </script>
 </body>
