@@ -233,12 +233,16 @@ function sel(contId, fn){
   if(!c)return;
   c.innerHTML=obras.map(function(o){
     return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+contId+'\',\''+fn+'\')">'+o.nome+'</div>';
+  }).join('');
 }
  
-window.setObra=function(id,cont,fn){
+window.setObra=function(id){
   obraId=id;updateBadge();
+  var btn=event.target;
+  var cont=btn.getAttribute('data-cont');
+  var fn=btn.getAttribute('data-fn');
   document.querySelectorAll('#'+cont+' .oc').forEach(function(c){c.classList.remove('active');});
-  event.target.classList.add('active');
+  btn.classList.add('active');
   if(fn==='d')renderDash();
   if(fn==='l')renderLancs();
   if(fn==='e')renderEtapas();
