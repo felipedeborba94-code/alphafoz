@@ -232,7 +232,7 @@ function sel(contId, fn){
   var c=document.getElementById(contId);
   if(!c)return;
   c.innerHTML=obras.map(function(o){
-    return '<div class="oc'+(o.id===obraId?' active':'')+'" onclick="setObra('+o.id+',\''+fn+'\',this)">'+o.nome+'</div>';
+    return '<div class="oc'+(sameId(o.id,obraId)?' active':'')+'" onclick="setObra(\''+o.id+'\',\''+fn+'\',this)">'+o.nome+'</div>';
   }).join('');
 }
  
@@ -243,6 +243,11 @@ window.setObra=function(id,fn,el){
   document.querySelectorAll('.oc').forEach(function(c){
     c.classList.remove('active');
   });
+
+  if(el) el.classList.add('active');
+
+  renderDash();
+};
 
   if(el) el.classList.add('active');
 
