@@ -427,7 +427,12 @@ function renderEtapas(){
     em[et].push(la[i]);
   }
   var el=document.getElementById('et-list');
-  var keys=Object.keys(em);
+  var keys=Object.keys(em).sort(function(a,b){
+    var ta=0,tb=0;
+    for(var i=0;i<em[a].length;i++) ta+=em[a][i].valor||0;
+    for(var i=0;i<em[b].length;i++) tb+=em[b][i].valor||0;
+    return tb-ta;
+  });
   if(keys.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">🏗️</span>Nenhum lançamento</div></div>'; return; }
   var h='';
   for(var k=0;k<keys.length;k++){
@@ -437,16 +442,41 @@ function renderEtapas(){
     for(var i=0;i<items.length;i++) tot+=items[i].valor||0;
     var isTer=et==='Aquisição do Terreno';
     var m2v=(!isTer&&found&&found.m2>0)?(tot/found.m2).toFixed(0):'—';
-    h+='<div class="card"><div class="ct"><span class="dot"></span>'+et+' <span style="margin-left:auto;font-size:.78rem;color:var(--gray)">R$'+m2v+'/m²</span></div>';
-    for(var i=0;i<items.length;i++){
-      var l=items[i];
+    var eid='et_'+k;
+    // Header clicável
+    h+='<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">';
+    h+='<div onclick="toggleEtapa(''+eid+'')" style="display:flex;align-items:center;padding:16px 20px;cursor:pointer;user-select:none">';
+    h+='<span class="dot" style="margin-right:10px"></span>';
+    h+='<span style="font-family:Montserrat,sans-serif;font-weight:700;font-size:.95rem;flex:1">'+et+'</span>';
+    h+='<span style="font-size:.78rem;color:var(--gray);margin-right:12px">'+items.length+' itens · R$'+m2v+'/m²</span>';
+    h+='<span style="font-family:Montserrat,sans-serif;font-weight:700;font-size:.95rem;color:var(--green);margin-right:10px">'+fmt(tot)+'</span>';
+    h+='<span id="arr_'+eid+'" style="color:var(--gray);font-size:.85rem;transition:transform .2s">▼</span>';
+    h+='</div>';
+    // Conteúdo colapsável
+    h+='<div id="'+eid+'" style="display:none;border-top:1px solid var(--light);padding:0 20px 16px">';
+    var sorted=items.slice().sort(function(a,b){ return new Date(b.data)-new Date(a.data); });
+    for(var i=0;i<sorted.length;i++){
+      var l=sorted[i];
       var hasUnit=l.qtd&&l.qtd>1&&l.unitario;
       var unitStr=hasUnit?' <span style="font-size:.7rem;color:var(--gray)">'+l.qtd+' '+(l.unid||'un')+' × R$'+(l.unitario||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>':'';
       h+='<div class="li"><div class="ld">'+fdate(l.data)+'</div><div class="li_i"><div class="li_d">'+(l.descricao||'')+'</div><div class="li_s"><span class="eb '+badgeCls(l.tipo)+'">'+l.tipo+'</span>'+unitStr+(l.ref?' · '+l.ref:'')+'</div></div><div class="li_v">'+fmt(l.valor)+'</div><button class="li_x" onclick="delL('+l.id+')">✕</button></div>';
     }
-    h+='<hr><div style="display:flex;justify-content:space-between;font-weight:600;font-size:.9rem"><span>Total '+et+'</span><span>'+fmt(tot)+'</span></div></div>';
+    h+='<hr><div style="display:flex;justify-content:space-between;font-weight:700;font-size:.92rem"><span>Total '+et+'</span><span>'+fmt(tot)+'</span></div>';
+    h+='</div></div>';
   }
   el.innerHTML=h;
+}
+
+function toggleEtapa(id){
+  var el=document.getElementById(id);
+  var arr=document.getElementById('arr_'+id);
+  if(el.style.display==='none'){
+    el.style.display='block';
+    arr.style.transform='rotate(180deg)';
+  } else {
+    el.style.display='none';
+    arr.style.transform='rotate(0deg)';
+  }
 }
 
 function renderObras(){
