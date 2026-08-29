@@ -3,24 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>AlphaFoz — Gestão de Obras</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<meta name="theme-color" content="#0d1b2e">
-
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="AlphaFoz">
-
+<meta name="theme-color" content="#0d1b2e">
 <link rel="manifest" href="/manifest.json">
-
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
-
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png">
-
+<link rel="apple-touch-icon" href="/icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{--navy:#0d1b2e;--navy2:#152540;--navy3:#1c3055;--gold:#b8942a;--gold2:#d4ad45;--gold3:#f0cc70;--cream:#f4f6f9;--white:#fff;--gray:#7a8fa8;--light:#e2e8f0;--green:#1e6b48;--red:#b03020;--shadow:0 4px 28px rgba(13,27,46,.14)}
@@ -32,7 +22,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 #overlay span{color:var(--gold2);font-family:'Montserrat',sans-serif;font-size:.8rem;letter-spacing:2px}
 #errmsg{color:#ff6b6b;font-size:.8rem;text-align:center;padding:0 20px;display:none}
 header{background:linear-gradient(135deg,#0d1b2e,#152540);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:68px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.35);border-bottom:1px solid rgba(180,148,42,.25)}
-.lw{display:flex;align-items:center;gap:12px}
+.lw{display:flex;align-items:center;gap:6px}
 .lt{display:flex;flex-direction:column;line-height:1.1}
 .ln{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;color:#fff}
 .ls{font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:3px;color:var(--gold2);text-transform:uppercase}
@@ -92,27 +82,11 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <body>
 <div id="overlay"><div class="spin"></div><span id="loadtxt">CARREGANDO...</span><div id="errmsg"></div></div>
 <header>
-  <div class="lw">
-
-    <img 
-  src="/icon-192.png"
-  alt="AlphaFoz"
-  style="
-    width:52px;
-    height:52px;
-    object-fit:contain;
-    border-radius:8px;
-  "
->
-
-    <div class="lt">
-      <span class="ln">ALPHAFOZ</span>
-      <span class="ls">Empreendimentos</span>
-    </div>
-
-  </div>
-
-  <div class="badge" id="hdrbadge"></div>
+<div class="lw">
+<img src="data:image/png;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/9k=" style="width:58px;height:58px;object-fit:contain">
+<div class="lt"><span class="ln">ALPHAFOZ</span><span class="ls">Empreendimentos</span></div>
+</div>
+<div class="badge" id="hdrbadge"></div>
 </header>
 <nav>
 <button class="active" onclick="go('dashboard',this)">📊 Resumo</button>
@@ -210,14 +184,14 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </div>
 </div>
 </div>
- 
+
 <!-- FISCAL -->
 <div id="page-fiscal" class="page">
   <div class="os" id="fi-sel"></div>
- 
+
   <div class="card">
     <div class="ct"><span class="dot"></span>Relatório Fiscal</div>
- 
+
     <div class="fg">
       <div class="s2"><label>Regime</label><select id="fi-regime" onchange="calcFiscal()">
         <option value="pf">Ganho de Capital (Pessoa Física)</option>
@@ -232,12 +206,12 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
         <input type="number" id="fi-corret" placeholder="0,00" step="0.01" oninput="calcFiscal()">
       </div>
     </div>
- 
+
     <hr>
- 
+
     <div id="fi-result" style="display:none">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px" id="fi-cards"></div>
- 
+
       <div style="background:var(--navy);border-radius:12px;padding:20px;color:#fff;margin-bottom:16px">
         <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:1rem;color:var(--gold2);margin-bottom:14px" id="fi-detalhes-title">
           Detalhamento de Custos
@@ -249,29 +223,29 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
           <span id="fi-imposto" style="color:var(--gold2);font-size:1.2rem"></span>
         </div>
       </div>
- 
+
       <button class="btn bp" onclick="imprimirFiscal()" style="width:100%">🖨️ Imprimir / Salvar PDF</button>
     </div>
- 
+
     <div id="fi-msg" style="text-align:center;font-size:.85rem;color:var(--gray);margin-top:10px">
       Preencha o valor de venda para calcular.
     </div>
   </div>
 </div>
- 
+
 <!-- CAIXA -->
 <div id="page-caixa" class="page">
- 
+
   <!-- RESUMO GERAL -->
   <div class="sg" id="cx-cards"></div>
- 
+
   <!-- TABS internas -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <button class="btn bp" id="cxtab-resumo" onclick="cxTab('resumo')" style="font-size:.8rem;padding:8px 16px">📊 Resumo</button>
     <button class="btn" id="cxtab-receber" onclick="cxTab('receber')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">📥 Recebimentos</button>
     <button class="btn" id="cxtab-aporte" onclick="cxTab('aporte')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">🤝 Aportes</button>
   </div>
- 
+
   <!-- RESUMO -->
   <div id="cxpanel-resumo">
     <div class="card">
@@ -283,10 +257,10 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <div id="cx-socios"></div>
     </div>
   </div>
- 
+
   <!-- RECEBIMENTOS -->
   <div id="cxpanel-receber" style="display:none">
- 
+
     <div class="card">
       <div class="ct"><span class="dot"></span>Importar Parcelas em Lote</div>
       <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cole o código ALPHAFOZ-REC:: gerado pelo Claude para lançar várias parcelas de uma vez.</p>
@@ -298,7 +272,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <button class="btn" id="rec-import-btn" onclick="confirmRecImport()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Lançar</button>
       <div id="rec-import-msg" style="margin-top:8px;text-align:center;font-size:.85rem"></div>
     </div>
- 
+
     <div class="card">
       <div class="ct"><span class="dot"></span>Novo Recebimento</div>
       <div class="fg">
@@ -323,7 +297,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <div id="rec-list"></div>
     </div>
   </div>
- 
+
   <!-- APORTES -->
   <div id="cxpanel-aporte" style="display:none">
     <div class="card">
@@ -346,33 +320,33 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <div id="ap-list"></div>
     </div>
   </div>
- 
+
 </div>
 </main>
 <script>
 var SURL = 'https://oososnfairagctqhdykp.supabase.co';
 var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vc29zbmZhaXJhZ2N0cWhkeWtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTIxODAsImV4cCI6MjA5MjYyODE4MH0.oB00TrGA3tA2QbZkdPPNB6NsiyokXM4YyGK3nt83OKg';
 var sb = supabase.createClient(SURL, SKEY);
- 
+
 var obras = [];
 var lancs = [];
 var obraId = null;
 var impBuf = null;
- 
+
 function loading(v){ document.getElementById('overlay').style.display = v ? 'flex' : 'none'; }
 function showErr(m){ var e=document.getElementById('errmsg'); e.textContent=m; e.style.display='block'; document.getElementById('loadtxt').style.display='none'; }
- 
+
 function fmt(v){ return 'R$'+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function fdate(d){ if(!d) return ''; try{ var p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; } catch(e){ return d; } }
 function badgeCls(t){ var m={'Material':'bm','Mao de Obra':'bo','Mão de Obra':'bo','Terreno/Taxas':'bt','Extra':'bx'}; return m[t]||'bx'; }
- 
+
 function updateBadge(){
   var found = null;
   for(var i=0;i<obras.length;i++){ if(Number(obras[i].id)===Number(obraId)){ found=obras[i]; break; } }
   var b = document.getElementById('hdrbadge');
   if(found){ b.textContent=found.nome; b.style.display=''; }
 }
- 
+
 function buildSel(contId, fn){
   var c = document.getElementById(contId);
   if(!c) return;
@@ -384,7 +358,7 @@ function buildSel(contId, fn){
   }
   c.innerHTML = h;
 }
- 
+
 function trocarObra(el){
   var id = Number(el.getAttribute('data-oid'));
   var cont = el.getAttribute('data-cont');
@@ -399,7 +373,7 @@ function trocarObra(el){
   else if(fn==='e') renderEtapas();
   else if(fn==='f'){ renderFiscal(); calcFiscal(); }
 }
- 
+
 function go(id, btn){
   var pages = document.querySelectorAll('.page');
   for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
@@ -415,7 +389,7 @@ function go(id, btn){
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
   else if(id==='caixa') renderCaixa();
 }
- 
+
 function renderDash(){
   buildSel('ds-sel','d');
   var found = null;
@@ -449,7 +423,7 @@ function renderDash(){
   }
   document.getElementById('ds-etapas').innerHTML = h||'<div class="empty"><span class="ic">🏗️</span>Nenhum lançamento</div>';
 }
- 
+
 function renderLancar(){
   var h='';
   for(var i=0;i<obras.length;i++){
@@ -458,10 +432,10 @@ function renderLancar(){
   document.getElementById('l-obra').innerHTML=h;
   document.getElementById('l-data').value=new Date().toISOString().split('T')[0];
 }
- 
+
 function calcT(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var u=parseFloat(document.getElementById('l-unit').value)||0; if(u>0) document.getElementById('l-total').value=(q*u).toFixed(2); }
 function calcU(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var v=parseFloat(document.getElementById('l-total').value)||0; if(v>0&&q>0) document.getElementById('l-unit').value=(v/q).toFixed(2); }
- 
+
 async function lancar(){
   var oid=parseInt(document.getElementById('l-obra').value);
   var data=document.getElementById('l-data').value;
@@ -487,7 +461,7 @@ async function lancar(){
   msg.style.color='var(--green)'; msg.textContent='Lançado: '+fmt(valor)+' em '+etapa;
   setTimeout(function(){ msg.textContent=''; },3000);
 }
- 
+
 function renderLancs(){
   buildSel('la-sel','l');
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); }).slice().sort(function(a,b){ return new Date(b.data) - new Date(a.data); });
@@ -503,7 +477,7 @@ function renderLancs(){
   }
   el.innerHTML=h;
 }
- 
+
 async function delL(id){
   if(!confirm('Excluir este lançamento?')) return;
   loading(true);
@@ -514,7 +488,7 @@ async function delL(id){
   loading(false);
   renderLancs();
 }
- 
+
 function renderEtapas(){
   buildSel('et-sel','e');
   var found=null;
@@ -564,7 +538,7 @@ function renderEtapas(){
   }
   el.innerHTML=h;
 }
- 
+
 function toggleEtapa(el){
   var id=el.getAttribute('data-eid');
   var content=document.getElementById(id);
@@ -578,7 +552,7 @@ function toggleEtapa(el){
     if(arr) arr.textContent='▼';
   }
 }
- 
+
 function renderObras(){
   document.getElementById('o-ano').value=document.getElementById('o-ano').value||new Date().getFullYear();
   var h='';
@@ -596,7 +570,7 @@ function renderObras(){
   }
   document.getElementById('o-list').innerHTML=h;
 }
- 
+
 async function addObra(){
   var nome=document.getElementById('o-nome').value.trim();
   var m2=parseFloat(document.getElementById('o-m2').value)||0;
@@ -613,7 +587,7 @@ async function addObra(){
   document.getElementById('o-local').value='';
   renderObras();
 }
- 
+
 async function delO(id){
   if(!confirm('Excluir obra e todos os lançamentos?')) return;
   loading(true);
@@ -626,7 +600,7 @@ async function delO(id){
   loading(false);
   renderObras();
 }
- 
+
 function parseImp(){
   var raw=document.getElementById('imp-code').value.trim();
   var msg=document.getElementById('imp-msg');
@@ -653,7 +627,7 @@ function parseImp(){
     btn.style.display='none';
   }
 }
- 
+
 async function confirmImp(){
   if(!impBuf) return;
   var d=impBuf;
@@ -691,12 +665,12 @@ async function confirmImp(){
   document.getElementById('imp-prev').innerHTML='';
   impBuf=null;
 }
- 
+
 // SEEDS
 var OBRAS_SEED = [{"nome": "Vila Maria Casa 3", "m2": 54, "local": "Foz do Iguaçu - R. Genesio Rorato 215", "tipo": "Residencial Unifamiliar", "ano": 2025}, {"nome": "Jardim das Águas", "m2": 250, "local": "Foz do Iguaçu - R. Cedro 52", "tipo": "Residencial Unifamiliar", "ano": 2025}];
 var LANCS_SEED = [{"old_id": 1, "data": "2026-02-23", "descricao": "Madeiras e colunas material fundação", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Perfuracao Brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 504.0, "valor": 504.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Copias Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 77.0, "valor": 77.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-24", "descricao": "Cimento, cal e call liquido", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2564.0, "valor": 2564.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1450.0, "valor": 1450.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Brita 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1200.0, "valor": 1200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Tilojo 9x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4050.0, "valor": 4050.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Mangueira e conectores, isopor, e chave", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 231.0, "valor": 231.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Encerramento Mei", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-02", "descricao": "Impermeabilizante Baldrame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 313.0, "valor": 313.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-27", "descricao": "Churrasco Fundacao", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 250.0, "valor": 250.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-03", "descricao": "Taxa Abertura CNPJ", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-06", "descricao": "Parafuso 20cm caixaria", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Encanamento esgoto e cimento", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2270.0, "valor": 2270.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Mensalidade container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 270.0, "valor": 270.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Fechadura portão casa do meio", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 240.0, "valor": 240.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-11", "descricao": "Veda trinca", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 184.0, "valor": 184.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-11", "descricao": "Retoques fissuras casa 2 e 3", "etapa": "Pintura", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1700.0, "valor": 1700.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-12", "descricao": "Coluna pronta laje, mangueiras corrugadas", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2000.0, "valor": 2000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-16", "descricao": "Madeiramento escoramento laje", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1085.0, "valor": 1085.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Laje 54m2 e escoras", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3750.0, "valor": 3750.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Microondas e ventilador queimados casa 1", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 843.0, "valor": 843.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Concreto laje 7m3", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4848.0, "valor": 4848.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-18", "descricao": "Vibrador aluguel", "etapa": "Fundações e Estruturas", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 100.0, "valor": 100.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-19", "descricao": "Tijolos 1500", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1680.0, "valor": 1680.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-20", "descricao": "Ben hur adiantar escritura", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-30", "descricao": "Contabilidade", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 200.0, "valor": 200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-30", "descricao": "Tubos e conexoes", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3000.0, "valor": 3000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-21", "descricao": "Infra Ar condicionado 40%", "etapa": "Instalações do Gás GLP e Condicionadores", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 790.0, "valor": 790.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-21", "descricao": "Container", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 560.0, "valor": 560.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Areia 7m3", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 945.0, "valor": 945.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Carga de terra", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 350.0, "valor": 350.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Cimento e call", "etapa": "Revestimentos", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3017.0, "valor": 3017.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-02-07", "descricao": "Entrada 10%", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4000.0, "valor": 4000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Fundacao e baldrames", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 4500.0, "valor": 4500.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-06", "descricao": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1800.0, "valor": 1800.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-09", "descricao": "Vale adiantamento Alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-13", "descricao": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2100.0, "valor": 2100.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-13", "descricao": "Alvenaria e montagem de laje", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2200.0, "valor": 2200.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-19", "descricao": "Acerto alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 2800.0, "valor": 2800.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-03-28", "descricao": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1240.0, "valor": 1240.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Diárias Osmar", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 840.0, "valor": 840.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-04-24", "descricao": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 300.0, "valor": 300.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Sinal de negocio 10% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 6333.33, "valor": 6333.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "Taxa Escrivão (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 14.33, "valor": 14.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-07-02", "descricao": "Escritura + Certidões (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 657.87, "valor": 657.87, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-11-02", "descricao": "ITBI 2% (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1266.67, "valor": 1266.67, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-11-02", "descricao": "Pagamento saldo integral (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 57000.0, "valor": 57000.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-12-02", "descricao": "Registro de imovel (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 441.72, "valor": 441.72, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Fevereiro e Marco (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 272.0, "valor": 272.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-05-05", "descricao": "IPTU Abril (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 125.67, "valor": 125.67, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Maio (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_id": 1, "data": "2026-01-01", "descricao": "IPTU Julho e Agosto (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 255.0, "valor": 255.0, "ref": "Importação Diário"}, {"old_id": 1, "data": "2025-01-10", "descricao": "IPTU Setembro (1/3)", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 129.33, "valor": 129.33, "ref": "Importação Diário"}, {"old_id": 2, "data": "2025-09-16", "descricao": "Pagamento comissao Permuta terrenos", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 20000.0, "valor": 20000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2025-10-02", "descricao": "Pagamento 50% Projeto", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5900.0, "valor": 5900.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-01-26", "descricao": "Limpeza Terreno", "etapa": "Aquisição do Terreno", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2700.0, "valor": 2700.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-11", "descricao": "Abertura CNPJ Empresa", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 1341.0, "valor": 1341.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-23", "descricao": "Topografia 2 terrenos", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-27", "descricao": "Padrao 2 caixas 1 completa e outra somente caixa", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1662.0, "valor": 1662.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-09", "descricao": "Mao de obra padrão Copel", "etapa": "Instalação Elétrica", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 400.0, "valor": 400.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-17", "descricao": "Material gabarito", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1610.0, "valor": 1610.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "Escrituras terrenos", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 3263.0, "valor": 3263.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "ART Projetos", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 217.0, "valor": 217.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-18", "descricao": "Taxa Escrivao", "etapa": "Aquisição do Terreno", "tipo": "Terreno/Taxas", "qtd": 1, "unid": "un", "unitario": 126.0, "valor": 126.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Material fundacao vigas, cimento e arame", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 11990.0, "valor": 11990.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Furacao de brocas", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3388.0, "valor": 3388.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-30", "descricao": "Tabuas caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 4600.0, "valor": 4600.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-30", "descricao": "Tijolos 14x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 14850.0, "valor": 14850.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-31", "descricao": "Tijolos 11x14x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3200.0, "valor": 3200.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Areia e brita", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2390.0, "valor": 2390.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Parafusos Caixarias", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 549.0, "valor": 549.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-09", "descricao": "Camera Wifii", "etapa": "Movimento de Terra e Extras", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 750.0, "valor": 750.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-10", "descricao": "Cimento Votoram", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 3162.0, "valor": 3162.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-16", "descricao": "Tijolo 11,5x19x24", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6300.0, "valor": 6300.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-16", "descricao": "Material Hidrossanitario", "etapa": "Instalação Hidráulica e Sanitária", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 5110.0, "valor": 5110.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-21", "descricao": "Tijolos 11,5x19x29", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 6216.0, "valor": 6216.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-21", "descricao": "Tx Alvara", "etapa": "Projeto Arquitetônico e Complementares", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 152.51, "valor": 152.51, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Areia 12m3", "etapa": "Fundação e Baldrame", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 1550.0, "valor": 1550.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Colunas 10mm 7x20", "etapa": "Alvenaria e Elevação", "tipo": "Material", "qtd": 1, "unid": "un", "unitario": 2548.0, "valor": 2548.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-02-16", "descricao": "Entrada", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3500.0, "valor": 3500.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-25", "descricao": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-28", "descricao": "Adiantamento fundacao", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-03-31", "descricao": "Adiantamento Fundação", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1000.0, "valor": 1000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-01", "descricao": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 1620.0, "valor": 1620.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-02", "descricao": "Quinzena Jose", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 7000.0, "valor": 7000.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-20", "descricao": "Adiantamento", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 183.0, "valor": 183.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Saldo fundação e início alvenaria", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 3360.0, "valor": 3360.0, "ref": "Importação Diário"}, {"old_id": 2, "data": "2026-04-24", "descricao": "Adiantamento Juan", "etapa": "Mão de Obra", "tipo": "Mão de Obra", "qtd": 1, "unid": "un", "unitario": 500.0, "valor": 500.0, "ref": "Importação Diário"}];
 var OLD_IDS = [1, 2];
- 
+
 async function migrate(){
   var r = await sb.from('obras').select('id').limit(1);
   if(r.error){ showErr('Erro Supabase: '+r.error.message); return false; }
@@ -717,8 +691,8 @@ async function migrate(){
   }
   return true;
 }
- 
- 
+
+
 function renderFiscal(){
   buildSel('fi-sel','f');
   document.getElementById('fi-venda').value='';
@@ -726,7 +700,7 @@ function renderFiscal(){
   document.getElementById('fi-result').style.display='none';
   document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
 }
- 
+
 function calcFiscal(){
   var venda=parseFloat(document.getElementById('fi-venda').value)||0;
   var corret=parseFloat(document.getElementById('fi-corret').value)||0;
@@ -736,7 +710,7 @@ function calcFiscal(){
     document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
     return;
   }
- 
+
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); });
   var mat=0,mo=0,ter=0;
   for(var i=0;i<la.length;i++){
@@ -747,7 +721,7 @@ function calcFiscal(){
   var custoTotal=mat+mo+ter;
   var custoLiquido=custoTotal+corret;
   var lucro=venda-custoLiquido;
- 
+
   if(regime==='pf'){
     var ir=lucro>0?lucro*0.15:0;
     document.getElementById('fi-cards').innerHTML=
@@ -792,12 +766,12 @@ function calcFiscal(){
   document.getElementById('fi-result').style.display='block';
   document.getElementById('fi-msg').textContent='';
 }
- 
+
 function imprimirFiscal(){
   var obra=null;
   for(var i=0;i<obras.length;i++) if(Number(obras[i].id)===Number(obraId)){ obra=obras[i]; break; }
   if(!obra) return;
- 
+
   var venda=parseFloat(document.getElementById('fi-venda').value)||0;
   var corret=parseFloat(document.getElementById('fi-corret').value)||0;
   var regime=document.getElementById('fi-regime').value;
@@ -811,7 +785,7 @@ function imprimirFiscal(){
   var custo=mat+mo+ter+corret;
   var lucro=venda-custo;
   var hoje=new Date().toLocaleDateString('pt-BR');
- 
+
   var win=window.open('','_blank');
   win.document.write('<html><head><meta charset="UTF-8"><title>Relatório Fiscal — '+obra.nome+'</title><style>');
   win.document.write('body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#1a1a2e;padding:20px}');
@@ -826,7 +800,7 @@ function imprimirFiscal(){
   win.document.write('.logo span{color:#b8942a}');
   win.document.write('</style></head><body>');
   win.document.write('<div class="logo">ALPHA<span>FOZ</span> <span style="font-weight:400;font-size:.7rem;letter-spacing:3px;color:#7a8fa8">EMPREENDIMENTOS</span></div>');
- 
+
   if(regime==='pf'){
     var ir=lucro>0?lucro*0.15:0;
     win.document.write('<h1>Relatório Fiscal — Ganho de Capital (Pessoa Física)</h1>');
@@ -860,18 +834,18 @@ function imprimirFiscal(){
     win.document.write('<tr class="ir-row"><td>Lucro Líquido</td><td>'+fmt(lucroLiq)+'</td></tr>');
     win.document.write('</table>');
   }
- 
+
   win.document.write('<p style="font-size:.75rem;color:#7a8fa8;margin-top:30px">Este relatório é uma estimativa baseada nos lançamentos registrados no sistema AlphaFoz. Consulte seu contador para confirmação dos valores.</p>');
   win.document.write('</body></html>');
   win.document.close();
   win.print();
 }
- 
- 
+
+
 // ---- CAIXA ----
 var recebimentos = [];
 var aportes = [];
- 
+
 function cxTab(tab){
   var tabs = ['resumo','receber','aporte'];
   tabs.forEach(function(t){
@@ -886,7 +860,7 @@ function cxTab(tab){
   if(tab==='receber') renderRecebimentos();
   if(tab==='aporte') renderAportes();
 }
- 
+
 async function renderCaixa(){
   loading(true);
   var r1 = await sb.from('recebimentos').select('*').order('data');
@@ -894,34 +868,34 @@ async function renderCaixa(){
   recebimentos = r1.data||[];
   aportes = r2.data||[];
   loading(false);
- 
+
   document.getElementById('rec-obra').innerHTML = obras.map(function(o){
     return '<option value="'+o.id+'">'+o.nome+'</option>';
   }).join('');
   document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('ap-data').value = new Date().toISOString().split('T')[0];
- 
+
   renderCxCards();
   renderCxResumo();
 }
- 
+
 function renderCxCards(){
   var totalRec = recebimentos.reduce(function(s,r){ return s+(r.valor||0); },0);
   var totalAp  = aportes.reduce(function(s,a){ return s+(a.valor||0); },0);
   var totalGasto = lancs.reduce(function(s,l){ return s+(l.valor||0); },0);
   var totalEntradas = totalRec + totalAp;
   var saldo = totalEntradas - totalGasto;
- 
+
   document.getElementById('cx-cards').innerHTML =
     '<div class="sc gold"><div class="lb">Saldo Disponível</div><div class="vl">'+fmt(saldo)+'</div><div class="sb">'+(saldo>=0?'Positivo':'Negativo')+'</div></div>'+
     '<div class="sc"><div class="lb">Total Recebido</div><div class="vl">'+fmt(totalRec)+'</div><div class="sb">Compradores</div></div>'+
     '<div class="sc"><div class="lb">Aportes Sócios</div><div class="vl">'+fmt(totalAp)+'</div><div class="sb">Felipe + Maico</div></div>'+
     '<div class="sc" style="'+(totalGasto>totalEntradas?'background:linear-gradient(145deg,#6b1e1e,#a03020)':'')+'"><div class="lb">Total Investido</div><div class="vl">'+fmt(totalGasto)+'</div><div class="sb">Todas as obras</div></div>';
 }
- 
+
 function renderCxResumo(){
   renderCxCards();
- 
+
   var h='';
   for(var i=0;i<obras.length;i++){
     var o=obras[i];
@@ -939,7 +913,7 @@ function renderCxResumo(){
     h+='</div></div>';
   }
   document.getElementById('cx-fluxo').innerHTML = h||'<div class="empty">Nenhum dado</div>';
- 
+
   var socios=['Felipe de Borba','Maico Pian'];
   var sh='';
   for(var i=0;i<socios.length;i++){
@@ -956,7 +930,7 @@ function renderCxResumo(){
   }
   document.getElementById('cx-socios').innerHTML = sh||'<div class="empty">Nenhum aporte registrado</div>';
 }
- 
+
 function renderRecebimentos(){
   var la = recebimentos.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
   var el = document.getElementById('rec-list');
@@ -969,9 +943,9 @@ function renderRecebimentos(){
   }
   el.innerHTML=h;
 }
- 
+
 var recImportBuf = null;
- 
+
 function parseRecImport(){
   var raw = document.getElementById('rec-import-code').value.trim();
   var msg = document.getElementById('rec-import-msg');
@@ -998,7 +972,7 @@ function parseRecImport(){
     btn.style.display='none';
   }
 }
- 
+
 async function confirmRecImport(){
   if(!recImportBuf) return;
   var d = recImportBuf;
@@ -1021,7 +995,7 @@ async function confirmRecImport(){
   renderRecebimentos();
   renderCxCards();
 }
- 
+
 async function addRecebimento(){
   var obraId=parseInt(document.getElementById('rec-obra').value);
   var data=document.getElementById('rec-data').value;
@@ -1041,7 +1015,7 @@ async function addRecebimento(){
   renderRecebimentos();
   renderCxCards();
 }
- 
+
 async function delRec(id){
   if(!confirm('Excluir recebimento?'))return;
   loading(true);
@@ -1051,7 +1025,7 @@ async function delRec(id){
   renderRecebimentos();
   renderCxCards();
 }
- 
+
 function renderAportes(){
   var la=aportes.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
   var el=document.getElementById('ap-list');
@@ -1063,7 +1037,7 @@ function renderAportes(){
   }
   el.innerHTML=h;
 }
- 
+
 async function addAporte(){
   var socio=document.getElementById('ap-socio').value;
   var data=document.getElementById('ap-data').value;
@@ -1082,7 +1056,7 @@ async function addAporte(){
   renderAportes();
   renderCxCards();
 }
- 
+
 async function delAp(id){
   if(!confirm('Excluir aporte?'))return;
   loading(true);
@@ -1092,7 +1066,7 @@ async function delAp(id){
   renderAportes();
   renderCxCards();
 }
- 
+
 async function init(){
   try{
     var ok=await migrate();
@@ -1111,7 +1085,7 @@ async function init(){
     showErr('Erro: '+e.message);
   }
 }
- 
+
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(function(regs){
     regs.forEach(function(reg){ reg.unregister(); });
