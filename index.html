@@ -199,6 +199,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </select>
 </div>
 </div>
+<div id="cmp-conting"></div>
 <div id="cmp-list"></div>
 </div>
 
@@ -459,8 +460,12 @@ async function matchOrCreateItemPadrao(descricao, unid, tipo){
   var descLow=(descricao||'').toLowerCase();
   for(var k=0;k<itensPadrao.length;k++){
     var nomeLow=itensPadrao[k].nome.toLowerCase();
-    var nomeCore=nomeLow.split(' ').slice(0,3).join(' ');
-    if(descLow.indexOf(nomeCore)>=0 || nomeLow.indexOf(descLow.split(' ').slice(0,3).join(' '))>=0) return itensPadrao[k].id;
+    if(descLow.indexOf(nomeLow)>=0 || nomeLow.indexOf(descLow)>=0) return itensPadrao[k].id;
+  }
+  for(var k=0;k<itensPadrao.length;k++){
+    var nomeLow=itensPadrao[k].nome.toLowerCase();
+    var nomeCore=nomeLow.split(' ').slice(0,4).join(' ');
+    if(nomeCore.length>=12 && descLow.indexOf(nomeCore)>=0) return itensPadrao[k].id;
   }
   if(tipo!=='Material') return null;
   var nome=(descricao||'').replace(/\s*\([^)]*\)\s*$/,'').trim();
@@ -727,7 +732,35 @@ function sparkline(vals){
   return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
 }
 
+function renderContingencia(){
+  var somaPondNum=0, somaGasto=0, considerados=0;
+  for(var i=0;i<itensPadrao.length;i++){
+    var ip=itensPadrao[i];
+    var items=lancs.filter(function(l){ return Number(l.item_padrao_id)===Number(ip.id); });
+    if(items.length<2) continue;
+    var sorted=items.slice().sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
+    var uPrimeiro=Number(sorted[0].unitario)||0;
+    var uUltimo=Number(sorted[sorted.length-1].unitario)||0;
+    if(uPrimeiro<=0) continue;
+    var varPct=((uUltimo-uPrimeiro)/uPrimeiro)*100;
+    var gasto=sorted.reduce(function(s,l){ return s+(Number(l.valor)||0); },0);
+    somaPondNum += varPct*gasto;
+    somaGasto += gasto;
+    considerados++;
+  }
+  var el=document.getElementById('cmp-conting');
+  if(considerados===0 || somaGasto===0){ el.innerHTML=''; return; }
+  var pct=somaPondNum/somaGasto;
+  var color = pct>0.5?'#b03020':(pct<-0.5?'#1e6b48':'var(--navy)');
+  var bg = pct>0.5?'linear-gradient(135deg,#c9a030,#8a6a10)':'linear-gradient(145deg,var(--navy2),var(--navy3))';
+  el.innerHTML='<div class="card" style="background:'+bg+';color:#fff"><div style="display:flex;align-items:center;justify-content:space-between">'+
+    '<div><div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;opacity:.75;margin-bottom:4px">Contingência sugerida (materiais)</div>'+
+    '<div style="font-family:\'Montserrat\',sans-serif;font-weight:700;font-size:1.6rem">'+(pct>=0?'+':'')+pct.toFixed(1)+'%</div>'+
+    '<div style="font-size:.72rem;opacity:.7;margin-top:2px">Média ponderada pelo valor gasto · '+considerados+' itens com 2+ compras</div></div></div></div>';
+}
+
 function renderCmp(){
+  renderContingencia();
   var q=(document.getElementById('cmp-search').value||'').toLowerCase().trim();
   var sortMode=document.getElementById('cmp-sort').value;
   var groups=[];
