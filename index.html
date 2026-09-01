@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <style>
 :root{--navy:#0d1b2e;--navy2:#152540;--navy3:#1c3055;--gold:#b8942a;--gold2:#d4ad45;--gold3:#f0cc70;--cream:#f4f6f9;--white:#fff;--gray:#7a8fa8;--light:#e2e8f0;--green:#1e6b48;--red:#b03020;--shadow:0 4px 28px rgba(13,27,46,.14)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -960,26 +960,100 @@ function imprimirLivroCaixa(oid, mes){
   win.print();
 }
 
-function exportarLivroCaixaExcel(oid, mes){
+async function exportarLivroCaixaExcel(oid, mes){
   var lc=calcularLivroCaixa(oid, mes);
   if(!lc) return;
-  var rows=[];
-  rows.push(['ALPHAFOZ EMPREENDIMENTOS']);
-  rows.push(['Livro Caixa — '+lc.obra.nome]);
-  rows.push(['Referência: '+lc.mes]);
-  rows.push([]);
-  rows.push(['Saldo em '+lc.dataInicioLabel, '', '', '', '', lc.saldoInicial]);
-  rows.push(['Data','Referência','Documento','Entrada','Saída','Saldo']);
+
+  var wb=new ExcelJS.Workbook();
+  wb.creator='AlphaFoz Empreendimentos';
+  var ws=wb.addWorksheet('Livro Caixa');
+  ws.columns=[{width:12},{width:36},{width:22},{width:15},{width:15},{width:16}];
+
+  var navy='FF0D1B2E', gold='FFB8942A', cream='FFF4F6F9', white='FFFFFFFF', gray='FF7A8FA8';
+
+  try{
+    var resp=await fetch(window.location.origin+'/icon-192.png');
+    var blob=await resp.blob();
+    var buf=await blob.arrayBuffer();
+    var logoId=wb.addImage({buffer:buf, extension:'png'});
+    ws.addImage(logoId, {tl:{col:0,row:0}, ext:{width:40,height:40}});
+  } catch(e){}
+
+  ws.mergeCells('B1:D1');
+  ws.getCell('B1').value='ALPHAFOZ EMPREENDIMENTOS';
+  ws.getCell('B1').font={bold:true,size:14,color:{argb:navy}};
+  ws.mergeCells('B2:D2');
+  ws.getCell('B2').value='Livro Caixa — '+lc.obra.nome;
+  ws.getCell('B2').font={bold:true,size:11,color:{argb:gray}};
+  ws.mergeCells('B3:D3');
+  ws.getCell('B3').value='Referência: '+lc.mes;
+  ws.getCell('B3').font={size:10,color:{argb:gray}};
+  ws.getRow(1).height=22; ws.getRow(2).height=16; ws.getRow(3).height=16;
+
+  var rSaldoIni=5;
+  ws.mergeCells('A'+rSaldoIni+':E'+rSaldoIni);
+  ws.getCell('A'+rSaldoIni).value='Saldo em '+lc.dataInicioLabel;
+  ws.getCell('A'+rSaldoIni).font={bold:true};
+  ws.getCell('A'+rSaldoIni).fill={type:'pattern',pattern:'solid',fgColor:{argb:cream}};
+  ws.getCell('F'+rSaldoIni).value=lc.saldoInicial;
+  ws.getCell('F'+rSaldoIni).numFmt='"R$" #,##0.00';
+  ws.getCell('F'+rSaldoIni).font={bold:true};
+  ws.getCell('F'+rSaldoIni).fill={type:'pattern',pattern:'solid',fgColor:{argb:cream}};
+
+  var rHeader=rSaldoIni+1;
+  var headers=['Data','Referência','Documento','Entrada','Saída','Saldo'];
+  headers.forEach(function(h,idx){
+    var cell=ws.getRow(rHeader).getCell(idx+1);
+    cell.value=h;
+    cell.font={bold:true,color:{argb:white}};
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:navy}};
+    cell.alignment={vertical:'middle'};
+  });
+  ws.getRow(rHeader).height=20;
+
+  var borderThin={style:'thin',color:{argb:'FFDDDDDD'}};
+  var r=rHeader+1;
   for(var i=0;i<lc.movs.length;i++){
     var m=lc.movs[i];
-    rows.push([fdate(m.data), m.referencia, m.documento, m.entrada>0?m.entrada:'', m.saida>0?m.saida:'', m.saldo]);
+    var row=ws.getRow(r);
+    row.getCell(1).value=fdate(m.data);
+    row.getCell(2).value=m.referencia;
+    row.getCell(3).value=m.documento;
+    if(m.entrada>0){ row.getCell(4).value=m.entrada; row.getCell(4).numFmt='"R$" #,##0.00'; row.getCell(4).font={color:{argb:'FF1E6B48'}}; }
+    if(m.saida>0){ row.getCell(5).value=m.saida; row.getCell(5).numFmt='"R$" #,##0.00'; row.getCell(5).font={color:{argb:'FFB03020'}}; }
+    row.getCell(6).value=m.saldo; row.getCell(6).numFmt='"R$" #,##0.00'; row.getCell(6).font={bold:true};
+    row.eachCell(function(cell){ cell.border={top:borderThin,bottom:borderThin,left:borderThin,right:borderThin}; });
+    if(i%2===1) row.eachCell(function(cell){ cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFAFBFC'}}; });
+    r++;
   }
-  rows.push(['','','','','Saldo Final', lc.saldoFinal]);
-  var ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:12},{wch:34},{wch:20},{wch:13},{wch:13},{wch:14}];
-  var wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Livro Caixa');
-  XLSX.writeFile(wb, 'LivroCaixa_'+lc.obra.nome.replace(/\s+/g,'_')+'_'+lc.mes+'.xlsx');
+  if(lc.movs.length===0){
+    ws.mergeCells('A'+r+':F'+r);
+    ws.getCell('A'+r).value='Nenhuma movimentação neste mês';
+    ws.getCell('A'+r).alignment={horizontal:'center'};
+    ws.getCell('A'+r).font={italic:true,color:{argb:gray}};
+    r++;
+  }
+  ws.mergeCells('A'+r+':E'+r);
+  ws.getCell('A'+r).value='SALDO FINAL';
+  ws.getCell('A'+r).font={bold:true,color:{argb:white}};
+  ws.getCell('A'+r).fill={type:'pattern',pattern:'solid',fgColor:{argb:gold}};
+  ws.getCell('F'+r).value=lc.saldoFinal;
+  ws.getCell('F'+r).numFmt='"R$" #,##0.00';
+  ws.getCell('F'+r).font={bold:true,color:{argb:white},size:12};
+  ws.getCell('F'+r).fill={type:'pattern',pattern:'solid',fgColor:{argb:gold}};
+
+  ws.getRow(rHeader).eachCell(function(cell){ cell.border={top:borderThin,bottom:borderThin,left:borderThin,right:borderThin}; });
+
+  var buffer=await wb.xlsx.writeBuffer();
+  var blobOut=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blobOut);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='LivroCaixa_'+lc.obra.nome.replace(/\s+/g,'_')+'_'+lc.mes+'.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function calcFiscal(){
