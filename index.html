@@ -22,17 +22,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);
 #overlay span{color:var(--gold2);font-family:'Montserrat',sans-serif;font-size:.8rem;letter-spacing:2px}
 #errmsg{color:#ff6b6b;font-size:.8rem;text-align:center;padding:0 20px;display:none}
 header{background:linear-gradient(135deg,#0d1b2e,#152540);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:68px;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.35);border-bottom:1px solid rgba(180,148,42,.25)}
-.lw{
-  display:flex;
-  align-items:center;
-  gap:2px;
-}
-
-.lt{
-  display:flex;
-  flex-direction:column;
-  line-height:1.05;
-}
+.lw{display:flex;align-items:center;gap:4px}
+.lt{display:flex;flex-direction:column;line-height:1.1}
 .ln{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:2px;color:#fff}
 .ls{font-family:'Montserrat',sans-serif;font-size:.55rem;letter-spacing:3px;color:var(--gold2);text-transform:uppercase}
 .badge{background:rgba(180,148,42,.15);color:var(--gold2);border:1px solid rgba(180,148,42,.35);border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;display:none}
@@ -91,18 +82,11 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <body>
 <div id="overlay"><div class="spin"></div><span id="loadtxt">CARREGANDO...</span><div id="errmsg"></div></div>
 <header>
- <div class="lw">
-  <img
-    src="/icon-192.png"
-    alt="AlphaFoz"
-    style="width:52px;height:52px;object-fit:contain;display:block;margin-right:-6px"
-  >
-  <div class="lt">
-    <span class="ln">ALPHAFOZ</span>
-    <span class="ls">Empreendimentos</span>
-  </div>
-
-  <div class="badge" id="hdrbadge"></div>
+<div class="lw">
+<img src="/icon-192.png" alt="AlphaFoz" style="width:54px;height:54px;object-fit:contain;display:block">
+<div class="lt"><span class="ln">ALPHAFOZ</span><span class="ls">Empreendimentos</span></div>
+</div>
+<div class="badge" id="hdrbadge"></div>
 </header>
 <nav>
 <button class="active" onclick="go('dashboard',this)">📊 Resumo</button>
@@ -111,6 +95,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <button onclick="go('etapas',this)">🏗️ Por Etapa</button>
 <button onclick="go('obras',this)">🏢 Obras</button>
 <button onclick="go('importar',this)">📷 Importar</button>
+<button onclick="go('comparativo',this)">📈 Comparativo</button>
 <button onclick="go('fiscal',this)">📄 Fiscal</button>
 <button onclick="go('caixa',this)">💰 Caixa</button>
 </nav>
@@ -199,6 +184,22 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 1. Tire foto da nota<br>2. Mande no chat do Claude<br>3. Fale a etapa e a obra<br>4. Cole o código aqui e confirme ✓
 </div>
 </div>
+</div>
+
+<div id="page-comparativo" class="page">
+<div class="card">
+<div class="ct"><span class="dot"></span>Comparativo de Preços</div>
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Apenas itens padronizados do catálogo (evita comparar coisas diferentes). Preço sempre por unidade — nunca o valor total do lançamento.</p>
+<div style="display:flex;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+<input type="text" id="cmp-search" placeholder="🔍 Buscar item..." oninput="renderCmp()" style="flex:1;min-width:140px">
+<select id="cmp-sort" onchange="renderCmp()" style="max-width:220px">
+<option value="var">Ordenar: maior variação</option>
+<option value="recent">Ordenar: mais recente</option>
+<option value="az">Ordenar: A-Z</option>
+</select>
+</div>
+</div>
+<div id="cmp-list"></div>
 </div>
 
 <!-- FISCAL -->
@@ -348,6 +349,7 @@ var obras = [];
 var lancs = [];
 var obraId = null;
 var impBuf = null;
+var itensPadrao = [];
 
 function loading(v){ document.getElementById('overlay').style.display = v ? 'flex' : 'none'; }
 function showErr(m){ var e=document.getElementById('errmsg'); e.textContent=m; e.style.display='block'; document.getElementById('loadtxt').style.display='none'; }
@@ -402,6 +404,7 @@ function go(id, btn){
   else if(id==='lancamentos') renderLancs();
   else if(id==='etapas') renderEtapas();
   else if(id==='obras') renderObras();
+  else if(id==='comparativo') renderCmp();
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
   else if(id==='caixa') renderCaixa();
 }
@@ -465,7 +468,14 @@ async function lancar(){
   var msg=document.getElementById('l-msg');
   if(!descricao||valor<=0){ msg.style.color='var(--red)'; msg.textContent='Preencha descrição e valor.'; return; }
   loading(true);
-  var r=await sb.from('lancamentos').insert([{obra_id:oid,data:data,descricao:descricao,etapa:etapa,tipo:tipo,qtd:qtd,unitario:unitario||valor,valor:valor,ref:ref}]).select();
+  var matchId=null;
+  var descLow=descricao.toLowerCase();
+  for(var k=0;k<itensPadrao.length;k++){
+    var nomeLow=itensPadrao[k].nome.toLowerCase();
+    var nomeCore=nomeLow.split(' ').slice(0,3).join(' ');
+    if(descLow.indexOf(nomeCore)>=0){ matchId=itensPadrao[k].id; break; }
+  }
+  var r=await sb.from('lancamentos').insert([{obra_id:oid,data:data,descricao:descricao,etapa:etapa,tipo:tipo,qtd:qtd,unitario:unitario||valor,valor:valor,ref:ref,item_padrao_id:matchId}]).select();
   if(r.data&&r.data.length>0) lancs.push(r.data[0]);
   obraId=oid; updateBadge();
   loading(false);
@@ -655,6 +665,13 @@ async function confirmImp(){
   var rows=[];
   for(var i=0;i<d.itens.length;i++){
     var item=d.itens[i];
+    var matchId=null;
+    var descLow=(item.desc||'').toLowerCase();
+    for(var k=0;k<itensPadrao.length;k++){
+      var nomeLow=itensPadrao[k].nome.toLowerCase();
+      var nomeCore=nomeLow.split(' ').slice(0,3).join(' ');
+      if(descLow.indexOf(nomeCore)>=0 || nomeLow.indexOf(descLow.split(' ').slice(0,3).join(' '))>=0){ matchId=itensPadrao[k].id; break; }
+    }
     rows.push({
       obra_id:obra.id,
       data:item.data||d.data||new Date().toISOString().split('T')[0],
@@ -665,7 +682,8 @@ async function confirmImp(){
       unid:item.unid||'un',
       unitario:item.unitario||item.valor,
       valor:item.valor,
-      ref:d.fornecedor||''
+      ref:d.fornecedor||'',
+      item_padrao_id:matchId
     });
   }
   var r=await sb.from('lancamentos').insert(rows).select();
@@ -680,6 +698,82 @@ async function confirmImp(){
   document.getElementById('imp-code').value='';
   document.getElementById('imp-prev').innerHTML='';
   impBuf=null;
+}
+
+function sparkline(vals){
+  if(vals.length<2) return '';
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  var range=mx-mn||1;
+  var w=70,h=24,step=w/(vals.length-1);
+  var pts=[];
+  for(var i=0;i<vals.length;i++){
+    var x=Math.round(i*step);
+    var y=Math.round(h-2-((vals[i]-mn)/range)*(h-4));
+    pts.push(x+','+y);
+  }
+  var up=vals[vals.length-1]>vals[0];
+  var color=up?'#b03020':'#1e6b48';
+  return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'"><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
+}
+
+function renderCmp(){
+  var q=(document.getElementById('cmp-search').value||'').toLowerCase().trim();
+  var sortMode=document.getElementById('cmp-sort').value;
+  var groups=[];
+  for(var i=0;i<itensPadrao.length;i++){
+    var ip=itensPadrao[i];
+    if(q && ip.nome.toLowerCase().indexOf(q)<0) continue;
+    var items=lancs.filter(function(l){ return Number(l.item_padrao_id)===Number(ip.id); });
+    if(items.length===0) continue;
+    var sorted=items.slice().sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
+    var vals=sorted.map(function(l){ return Number(l.unitario)||0; });
+    var med=vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    var lastDate=sorted[sorted.length-1].data;
+    var totalVar=vals[0]>0?((vals[vals.length-1]-vals[0])/vals[0]*100):0;
+    groups.push({ip:ip,items:sorted,vals:vals,med:med,lastDate:lastDate,totalVar:totalVar});
+  }
+  if(sortMode==='var') groups.sort(function(a,b){ return Math.abs(b.totalVar)-Math.abs(a.totalVar); });
+  else if(sortMode==='recent') groups.sort(function(a,b){ return new Date(b.lastDate)-new Date(a.lastDate); });
+  else groups.sort(function(a,b){ return a.ip.nome.localeCompare(b.ip.nome); });
+
+  var el=document.getElementById('cmp-list');
+  if(groups.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">📊</span>Nenhum item padronizado com histórico ainda</div></div>'; return; }
+  var h='';
+  for(var i=0;i<groups.length;i++){
+    var g=groups[i];
+    var varColor = Math.abs(g.totalVar)<0.5 ? 'var(--gray)' : (g.totalVar>0?'#880e4f':'#1b5e20');
+    var varBg = Math.abs(g.totalVar)<0.5 ? 'var(--light)' : (g.totalVar>0?'#fce4ec':'#e8f5e9');
+    var varArrow = g.totalVar>0.5?'↑':(g.totalVar<-0.5?'↓':'');
+    h+='<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">';
+    h+='<div style="font-weight:700;font-size:.95rem;color:var(--navy)">'+g.ip.nome+'</div>';
+    h+='<div style="display:flex;align-items:center;gap:8px">'+sparkline(g.vals)+'<span style="background:'+varBg+';color:'+varColor+';font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:10px">'+varArrow+Math.abs(g.totalVar).toFixed(1)+'%</span></div></div>';
+    h+='<div style="font-size:.72rem;color:var(--gray);margin-bottom:10px">média R$'+g.med.toLocaleString('pt-BR',{minimumFractionDigits:2})+'/'+(g.ip.unid||'un')+' · '+g.items.length+' compra'+(g.items.length>1?'s':'')+'</div>';
+    h+='<div style="display:flex;padding:8px 0;border-bottom:1px solid var(--light);font-size:.68rem;color:var(--gray);text-transform:uppercase;font-weight:600"><div style="flex:1">Data</div><div style="flex:1.2">Obra</div><div style="flex:1.3">Fornecedor</div><div style="width:75px;text-align:right">R$/'+(g.ip.unid||'un')+'</div><div style="width:55px;text-align:right">Δ</div></div>';
+    for(var j=0;j<g.items.length;j++){
+      var l=g.items[j];
+      var on=''; for(var k=0;k<obras.length;k++) if(Number(obras[k].id)===Number(l.obra_id)){ on=obras[k].nome; break; }
+      var u=Number(l.unitario)||0;
+      var delta='';
+      var dColor='var(--gray)';
+      if(j>0){
+        var prev=Number(g.items[j-1].unitario)||0;
+        if(prev>0){
+          var pct=((u-prev)/prev*100);
+          delta=(pct>0?'↑':pct<0?'↓':'')+Math.abs(pct).toFixed(1)+'%';
+          dColor=pct>0.5?'var(--red)':(pct<-0.5?'var(--green)':'var(--gray)');
+        }
+      }
+      var vColor = u===Math.min.apply(null,g.vals) ? 'var(--green)' : (u===Math.max.apply(null,g.vals) ? 'var(--red)' : 'var(--navy)');
+      h+='<div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--cream);font-size:.82rem">';
+      h+='<div style="flex:1;color:var(--gray)">'+fdate(l.data)+'</div>';
+      h+='<div style="flex:1.2">'+on+'</div>';
+      h+='<div style="flex:1.3;color:var(--gray);font-size:.78rem">'+(l.ref||'—')+'</div>';
+      h+='<div style="width:75px;text-align:right;font-weight:700;color:'+vColor+'">R$'+u.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div>';
+      h+='<div style="width:55px;text-align:right;font-size:.72rem;color:'+dColor+'">'+(delta||'—')+'</div></div>';
+    }
+    h+='</div>';
+  }
+  el.innerHTML=h;
 }
 
 // SEEDS
@@ -1090,9 +1184,11 @@ async function init(){
     document.getElementById('loadtxt').textContent='CARREGANDO...';
     var r1=await sb.from('obras').select('*').order('id');
     var r2=await sb.from('lancamentos').select('*').order('id');
+    var r3=await sb.from('itens_padrao').select('*').order('nome');
     if(r1.error){ showErr('Erro: '+r1.error.message); return; }
     obras=r1.data||[];
     lancs=r2.data||[];
+    itensPadrao=r3.data||[];
     if(obras.length>0) obraId=obras[0].id;
     loading(false);
     renderDash();
