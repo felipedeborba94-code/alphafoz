@@ -239,6 +239,21 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       </div>
     </div>
 
+    <div id="fi-aliquotas-pf" style="display:none;margin-top:12px">
+      <label>Alíquota IR — Ganho de Capital (%)</label>
+      <input type="number" id="fi-aliq-ir" value="15" step="0.01" oninput="calcFiscal()" style="max-width:140px">
+    </div>
+
+    <div id="fi-aliquotas-pj" style="display:none;margin-top:12px">
+      <div style="font-size:.75rem;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Alíquotas Lucro Presumido (%) — ajustável conforme legislação</div>
+      <div class="fg">
+        <div><label>IRPJ</label><input type="number" id="fi-aliq-irpj" value="1.2" step="0.01" oninput="calcFiscal()"></div>
+        <div><label>CSLL</label><input type="number" id="fi-aliq-csll" value="1.08" step="0.01" oninput="calcFiscal()"></div>
+        <div><label>PIS</label><input type="number" id="fi-aliq-pis" value="0.65" step="0.01" oninput="calcFiscal()"></div>
+        <div><label>COFINS</label><input type="number" id="fi-aliq-cofins" value="3" step="0.01" oninput="calcFiscal()"></div>
+      </div>
+    </div>
+
     <hr>
 
     <div id="fi-result" style="display:none">
@@ -1108,6 +1123,8 @@ function calcFiscal(){
   var venda=parseFloat(document.getElementById('fi-venda').value)||0;
   var corret=parseFloat(document.getElementById('fi-corret').value)||0;
   var regime=document.getElementById('fi-regime').value;
+  document.getElementById('fi-aliquotas-pf').style.display = regime==='pf' ? 'block':'none';
+  document.getElementById('fi-aliquotas-pj').style.display = regime==='pj' ? 'block':'none';
   if(venda<=0){
     document.getElementById('fi-result').style.display='none';
     document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
@@ -1126,12 +1143,13 @@ function calcFiscal(){
   var lucro=venda-custoLiquido;
 
   if(regime==='pf'){
-    var ir=lucro>0?lucro*0.15:0;
+    var aliqIr=(parseFloat(document.getElementById('fi-aliq-ir').value)||15)/100;
+    var ir=lucro>0?lucro*aliqIr:0;
     document.getElementById('fi-cards').innerHTML=
       '<div class="sc gold"><div class="lb">Valor de Venda</div><div class="vl">'+fmt(venda)+'</div><div class="sb">Valor recebido pelo imóvel</div></div>'+
       '<div class="sc"><div class="lb">Custo Total</div><div class="vl">'+fmt(custoLiquido)+'</div><div class="sb">Obra + Terreno + Corretagem</div></div>'+
       '<div class="sc" style="'+(lucro>0?'background:linear-gradient(145deg,#1e4d2b,#2e7d46)':'background:linear-gradient(145deg,#6b1e1e,#a03020)')+'"><div class="lb">Lucro</div><div class="vl">'+fmt(lucro)+'</div><div class="sb">'+(lucro>0?'Ganho de capital':'Prejuízo — sem imposto')+'</div></div>'+
-      '<div class="sc"><div class="lb">Alíquota IR</div><div class="vl">15%</div><div class="sb">Ganho de capital pessoa física</div></div>';
+      '<div class="sc"><div class="lb">Alíquota IR</div><div class="vl">'+(aliqIr*100).toLocaleString('pt-BR')+'%</div><div class="sb">Ganho de capital pessoa física</div></div>';
     document.getElementById('fi-detalhes-title').textContent='Detalhamento de Custos';
     document.getElementById('fi-detalhes').innerHTML=
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">Valor de Venda</span><span>'+fmt(venda)+'</span></div>'+
@@ -1140,17 +1158,22 @@ function calcFiscal(){
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Mão de Obra</span><span>'+fmt(mo)+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Terreno e Taxas</span><span>'+fmt(ter)+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:.95rem;font-weight:600"><span>= Lucro Tributável</span><span style="color:'+(lucro>0?'#7dffb3':'#ff8a8a')+'">'+fmt(lucro)+'</span></div>';
-    document.getElementById('fi-imposto-label').textContent='IMPOSTO DEVIDO (15%)';
+    document.getElementById('fi-imposto-label').textContent='IMPOSTO DEVIDO ('+(aliqIr*100).toLocaleString('pt-BR')+'%)';
     document.getElementById('fi-imposto').textContent = lucro>0 ? fmt(ir) : 'R$0 (prejuízo)';
   } else {
-    var irpj=venda*0.012, csll=venda*0.0108, pis=venda*0.0065, cofins=venda*0.03;
+    var aliqIrpj=(parseFloat(document.getElementById('fi-aliq-irpj').value)||1.2)/100;
+    var aliqCsll=(parseFloat(document.getElementById('fi-aliq-csll').value)||1.08)/100;
+    var aliqPis=(parseFloat(document.getElementById('fi-aliq-pis').value)||0.65)/100;
+    var aliqCofins=(parseFloat(document.getElementById('fi-aliq-cofins').value)||3)/100;
+    var irpj=venda*aliqIrpj, csll=venda*aliqCsll, pis=venda*aliqPis, cofins=venda*aliqCofins;
     var totalImp=irpj+csll+pis+cofins;
+    var aliqTotal=aliqIrpj+aliqCsll+aliqPis+aliqCofins;
     var lucroLiq=lucro-totalImp;
     document.getElementById('fi-cards').innerHTML=
       '<div class="sc gold"><div class="lb">Valor de Venda</div><div class="vl">'+fmt(venda)+'</div><div class="sb">Receita bruta PJ</div></div>'+
       '<div class="sc"><div class="lb">Custo Total</div><div class="vl">'+fmt(custoLiquido)+'</div><div class="sb">Obra + Terreno + Corretagem</div></div>'+
       '<div class="sc" style="'+(lucroLiq>0?'background:linear-gradient(145deg,#1e4d2b,#2e7d46)':'background:linear-gradient(145deg,#6b1e1e,#a03020)')+'"><div class="lb">Lucro Líquido</div><div class="vl">'+fmt(lucroLiq)+'</div><div class="sb">Após impostos PJ</div></div>'+
-      '<div class="sc"><div class="lb">Carga Tributária</div><div class="vl">5,93%</div><div class="sb">IRPJ+CSLL+PIS+COFINS s/ receita</div></div>';
+      '<div class="sc"><div class="lb">Carga Tributária</div><div class="vl">'+(aliqTotal*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%</div><div class="sb">IRPJ+CSLL+PIS+COFINS s/ receita</div></div>';
     document.getElementById('fi-detalhes-title').textContent='Detalhamento — Lucro Presumido (PJ)';
     document.getElementById('fi-detalhes').innerHTML=
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">Valor de Venda</span><span>'+fmt(venda)+'</span></div>'+
@@ -1158,12 +1181,12 @@ function calcFiscal(){
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Materiais</span><span>'+fmt(mat)+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Mão de Obra</span><span>'+fmt(mo)+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.88rem"><span style="opacity:.75">(-) Terreno e Taxas</span><span>'+fmt(ter)+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>IRPJ (1,2%)</span><span>'+fmt(irpj)+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>CSLL (1,08%)</span><span>'+fmt(csll)+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>PIS (0,65%)</span><span>'+fmt(pis)+'</span></div>'+
-      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>COFINS (3%)</span><span>'+fmt(cofins)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>IRPJ ('+(aliqIrpj*100).toLocaleString('pt-BR')+'%)</span><span>'+fmt(irpj)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>CSLL ('+(aliqCsll*100).toLocaleString('pt-BR')+'%)</span><span>'+fmt(csll)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>PIS ('+(aliqPis*100).toLocaleString('pt-BR')+'%)</span><span>'+fmt(pis)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:.85rem;opacity:.6"><span>COFINS ('+(aliqCofins*100).toLocaleString('pt-BR')+'%)</span><span>'+fmt(cofins)+'</span></div>'+
       '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:.95rem;font-weight:600"><span>= Lucro Líquido</span><span style="color:'+(lucroLiq>0?'#7dffb3':'#ff8a8a')+'">'+fmt(lucroLiq)+'</span></div>';
-    document.getElementById('fi-imposto-label').textContent='TOTAL IMPOSTOS (5,93%)';
+    document.getElementById('fi-imposto-label').textContent='TOTAL IMPOSTOS ('+(aliqTotal*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%)';
     document.getElementById('fi-imposto').textContent = fmt(totalImp);
   }
   document.getElementById('fi-result').style.display='block';
@@ -1203,7 +1226,8 @@ function imprimirFiscal(){
   win.document.write(logoHeaderHtml());
 
   if(regime==='pf'){
-    var ir=lucro>0?lucro*0.15:0;
+    var aliqIr=(parseFloat(document.getElementById('fi-aliq-ir').value)||15)/100;
+    var ir=lucro>0?lucro*aliqIr:0;
     win.document.write('<h1>Relatório Fiscal — Ganho de Capital (Pessoa Física)</h1>');
     win.document.write('<div class="sub">'+obra.nome+' · '+obra.tipo+' · '+(obra.local||'')+' · Emitido em '+hoje+'</div>');
     win.document.write('<table>');
@@ -1213,11 +1237,16 @@ function imprimirFiscal(){
     win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">(-) Mão de Obra</td><td>'+fmt(mo)+'</td></tr>');
     win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">(-) Terreno e Taxas</td><td>'+fmt(ter)+'</td></tr>');
     win.document.write('<tr class="total-row"><td>= Lucro Tributável</td><td>'+fmt(lucro)+'</td></tr>');
-    win.document.write('<tr class="ir-row"><td>Imposto de Renda (15%)</td><td>'+fmt(ir)+'</td></tr>');
+    win.document.write('<tr class="ir-row"><td>Imposto de Renda ('+(aliqIr*100).toLocaleString('pt-BR')+'%)</td><td>'+fmt(ir)+'</td></tr>');
     win.document.write('</table>');
   } else {
-    var irpj=venda*0.012, csll=venda*0.0108, pis=venda*0.0065, cofins=venda*0.03;
+    var aliqIrpj=(parseFloat(document.getElementById('fi-aliq-irpj').value)||1.2)/100;
+    var aliqCsll=(parseFloat(document.getElementById('fi-aliq-csll').value)||1.08)/100;
+    var aliqPis=(parseFloat(document.getElementById('fi-aliq-pis').value)||0.65)/100;
+    var aliqCofins=(parseFloat(document.getElementById('fi-aliq-cofins').value)||3)/100;
+    var irpj=venda*aliqIrpj, csll=venda*aliqCsll, pis=venda*aliqPis, cofins=venda*aliqCofins;
     var totalImp=irpj+csll+pis+cofins;
+    var aliqTotal=aliqIrpj+aliqCsll+aliqPis+aliqCofins;
     var lucroLiq=lucro-totalImp;
     win.document.write('<h1>Relatório Fiscal — Lucro Presumido (Pessoa Jurídica)</h1>');
     win.document.write('<div class="sub">'+obra.nome+' · '+obra.tipo+' · '+(obra.local||'')+' · Emitido em '+hoje+'</div>');
@@ -1227,11 +1256,11 @@ function imprimirFiscal(){
     win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">(-) Materiais</td><td>'+fmt(mat)+'</td></tr>');
     win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">(-) Mão de Obra</td><td>'+fmt(mo)+'</td></tr>');
     win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">(-) Terreno e Taxas</td><td>'+fmt(ter)+'</td></tr>');
-    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">IRPJ (1,2% s/ receita)</td><td>'+fmt(irpj)+'</td></tr>');
-    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">CSLL (1,08% s/ receita)</td><td>'+fmt(csll)+'</td></tr>');
-    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">PIS (0,65% s/ receita)</td><td>'+fmt(pis)+'</td></tr>');
-    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">COFINS (3% s/ receita)</td><td>'+fmt(cofins)+'</td></tr>');
-    win.document.write('<tr class="total-row"><td>Total Impostos (5,93%)</td><td>'+fmt(totalImp)+'</td></tr>');
+    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">IRPJ ('+(aliqIrpj*100).toLocaleString('pt-BR')+'% s/ receita)</td><td>'+fmt(irpj)+'</td></tr>');
+    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">CSLL ('+(aliqCsll*100).toLocaleString('pt-BR')+'% s/ receita)</td><td>'+fmt(csll)+'</td></tr>');
+    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">PIS ('+(aliqPis*100).toLocaleString('pt-BR')+'% s/ receita)</td><td>'+fmt(pis)+'</td></tr>');
+    win.document.write('<tr><td style="padding-left:24px;color:#7a8fa8">COFINS ('+(aliqCofins*100).toLocaleString('pt-BR')+'% s/ receita)</td><td>'+fmt(cofins)+'</td></tr>');
+    win.document.write('<tr class="total-row"><td>Total Impostos ('+(aliqTotal*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%)</td><td>'+fmt(totalImp)+'</td></tr>');
     win.document.write('<tr class="ir-row"><td>Lucro Líquido</td><td>'+fmt(lucroLiq)+'</td></tr>');
     win.document.write('</table>');
   }
@@ -1397,9 +1426,9 @@ function renderRecResumo(){
       if(faltaValor>0) porObra[c.obra_id].clientesPendentes++;
     }
   }
-  var keys=Object.keys(porObra).filter(function(k){ return porObra[k].recebido>0 || porObra[k].projetado>0; });
+  var keys=Object.keys(porObra).filter(function(k){ return porObra[k].projetado>0.01; });
   keys.sort(function(a,b){ return porObra[b].projetado-porObra[a].projetado; });
-  if(keys.length===0){ el.innerHTML='<div class="empty"><span class="ic">📊</span>Nenhum dado ainda</div>'; return; }
+  if(keys.length===0){ el.innerHTML='<div class="empty"><span class="ic">✅</span>Todas as obras com contrato cadastrado estão quitadas</div>'; return; }
   var h='<div class="sg" style="margin-bottom:0">';
   for(var i=0;i<keys.length;i++){
     var o=porObra[keys[i]];
