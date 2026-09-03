@@ -535,6 +535,16 @@ function renderLancar(){
 function calcT(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var u=parseFloat(document.getElementById('l-unit').value)||0; if(u>0) document.getElementById('l-total').value=(q*u).toFixed(2); }
 function calcU(){ var q=parseFloat(document.getElementById('l-qtd').value)||1; var v=parseFloat(document.getElementById('l-total').value)||0; if(v>0&&q>0) document.getElementById('l-unit').value=(v/q).toFixed(2); }
 
+async function ensureFornecedor(nome, tipo){
+  if(tipo!=='Material' || !nome || !nome.trim() || nome==='Lançamento Manual') return;
+  var nomeTrim=nome.trim();
+  if(fornecedores.some(function(f){return f.nome===nomeTrim;})) return;
+  try{
+    var r=await sb.from('fornecedores').insert([{nome:nomeTrim}]).select();
+    if(r.data && r.data.length>0) fornecedores.push(r.data[0]);
+  } catch(e){}
+}
+
 async function matchOrCreateItemPadrao(descricao, unid, tipo){
   var descLow=(descricao||'').toLowerCase();
   for(var k=0;k<itensPadrao.length;k++){
@@ -576,6 +586,7 @@ async function lancar(){
   if(!descricao||valor<=0){ msg.style.color='var(--red)'; msg.textContent='Preencha descrição e valor.'; return; }
   loading(true);
   var matchId=await matchOrCreateItemPadrao(descricao, 'un', tipo);
+  await ensureFornecedor(ref, tipo);
   var r=await sb.from('lancamentos').insert([{obra_id:oid,data:data,descricao:descricao,etapa:etapa,tipo:tipo,qtd:qtd,unitario:unitario||valor,valor:valor,ref:ref,item_padrao_id:matchId}]).select();
   if(r.data&&r.data.length>0) lancs.push(r.data[0]);
   obraId=oid; updateBadge();
@@ -823,6 +834,7 @@ async function confirmImp(){
   if(!obra){ document.getElementById('imp-msg').textContent='Obra não encontrada.'; return; }
   loading(true);
   var rows=[];
+  await ensureFornecedor(d.fornecedor, d.itens.some(function(x){return (x.tipo||'Material')==='Material';})?'Material':'');
   for(var i=0;i<d.itens.length;i++){
     var item=d.itens[i];
     var matchId=await matchOrCreateItemPadrao(item.desc, item.unid, item.tipo||'Material');
