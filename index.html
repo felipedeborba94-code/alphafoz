@@ -97,7 +97,9 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <button onclick="go('obras',this)">🏢 Obras</button>
 <button onclick="go('importar',this)">📷 Importar</button>
 <button onclick="go('comparativo',this)">📈 Comparativo</button>
+<button onclick="go('catalogo',this)">🏷️ Catálogo</button>
 <button onclick="go('fiscal',this)">📄 Fiscal</button>
+<button onclick="go('recebimentos',this)">👥 Recebimentos</button>
 <button onclick="go('caixa',this)">💰 Caixa</button>
 </nav>
 <main>
@@ -146,7 +148,7 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </div>
 <div id="page-lancamentos" class="page">
 <div class="os" id="la-sel"></div>
-<div class="card"><div class="ct"><span class="dot"></span>Lançamentos</div><div id="la-list"></div></div>
+<div class="card"><div class="ct"><span class="dot"></span>Lançamentos</div><input type="text" id="la-search" placeholder="🔍 Buscar por descrição, fornecedor..." oninput="renderLancs()" style="margin-bottom:12px"><div id="la-list"></div></div>
 </div>
 <div id="page-etapas" class="page">
 <div class="os" id="et-sel"></div>
@@ -204,6 +206,15 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <div id="cmp-list"></div>
 </div>
 
+<div id="page-catalogo" class="page">
+<div class="card">
+<div class="ct"><span class="dot"></span>Catálogo de Itens Padrão</div>
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Itens usados pra padronizar o Comparativo de Preços. Renomeie pra corrigir nomes, ou apague itens sem uso (nunca apaga um item com lançamentos vinculados).</p>
+<input type="text" id="cat-search" placeholder="🔍 Buscar item..." oninput="renderCatalogo()" style="margin-bottom:12px">
+</div>
+<div id="cat-list"></div>
+</div>
+
 <!-- FISCAL -->
 <div id="page-fiscal" class="page">
   <div class="os" id="fi-sel"></div>
@@ -253,6 +264,50 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </div>
 
 <!-- CAIXA -->
+<div id="page-recebimentos" class="page">
+  <div class="card">
+    <div class="ct"><span class="dot"></span>Importar Parcelas em Lote</div>
+    <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cole o código ALPHAFOZ-REC:: gerado pelo Claude para lançar várias parcelas de uma vez.</p>
+    <label>Código de Importação</label>
+    <textarea id="rec-import-code" rows="4" placeholder="ALPHAFOZ-REC::..."></textarea>
+    <hr>
+    <div id="rec-import-prev"></div>
+    <button class="btn bp" onclick="parseRecImport()" style="width:100%;margin-bottom:8px">🔍 Visualizar</button>
+    <button class="btn" id="rec-import-btn" onclick="confirmRecImport()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Lançar</button>
+    <div id="rec-import-msg" style="margin-top:8px;text-align:center;font-size:.85rem"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct"><span class="dot"></span>Novo Recebimento</div>
+    <div class="fg">
+      <div><label>Obra</label><select id="rec-obra"></select></div>
+      <div><label>Data</label><input type="date" id="rec-data"></div>
+      <div class="s2"><label>Descrição</label><input type="text" id="rec-desc" placeholder="Ex: Parcela 3 comprador João..."></div>
+      <div><label>Cliente</label><input type="text" id="rec-cliente" placeholder="Ex: João Silva"></div>
+      <div><label>Tipo</label><select id="rec-tipo">
+        <option>Parcela comprador</option>
+        <option>Entrada</option>
+        <option>Financiamento bancário</option>
+        <option>Sinal</option>
+        <option>Outros</option>
+      </select></div>
+      <div><label>Valor (R$)</label><input type="number" id="rec-valor" placeholder="0,00" step="0.01"></div>
+    </div>
+    <hr>
+    <button class="btn bp" onclick="addRecebimento()" style="width:100%">+ Registrar Recebimento</button>
+    <div id="rec-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><span class="dot"></span>Por Cliente</div>
+    <div id="rec-clientes"></div>
+  </div>
+  <div class="card">
+    <div class="ct"><span class="dot"></span>Histórico de Recebimentos</div>
+    <input type="text" id="rec-search" placeholder="🔍 Buscar por descrição, cliente..." oninput="renderRecebimentos()" style="margin-bottom:12px">
+    <div id="rec-list"></div>
+  </div>
+</div>
+
 <div id="page-caixa" class="page">
 
   <!-- RESUMO GERAL -->
@@ -261,7 +316,6 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
   <!-- TABS internas -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <button class="btn bp" id="cxtab-resumo" onclick="cxTab('resumo')" style="font-size:.8rem;padding:8px 16px">📊 Resumo</button>
-    <button class="btn" id="cxtab-receber" onclick="cxTab('receber')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">📥 Recebimentos</button>
     <button class="btn" id="cxtab-aporte" onclick="cxTab('aporte')" style="font-size:.8rem;padding:8px 16px;background:var(--light);color:var(--navy)">🤝 Aportes</button>
   </div>
 
@@ -285,51 +339,6 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <hr>
       <button class="btn bp" onclick="gerarLivroCaixa()" style="width:100%;margin-bottom:8px">📊 Gerar Relatório</button>
       <div id="lc-preview"></div>
-    </div>
-  </div>
-
-  <!-- RECEBIMENTOS -->
-  <div id="cxpanel-receber" style="display:none">
-
-    <div class="card">
-      <div class="ct"><span class="dot"></span>Importar Parcelas em Lote</div>
-      <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cole o código ALPHAFOZ-REC:: gerado pelo Claude para lançar várias parcelas de uma vez.</p>
-      <label>Código de Importação</label>
-      <textarea id="rec-import-code" rows="4" placeholder="ALPHAFOZ-REC::..."></textarea>
-      <hr>
-      <div id="rec-import-prev"></div>
-      <button class="btn bp" onclick="parseRecImport()" style="width:100%;margin-bottom:8px">🔍 Visualizar</button>
-      <button class="btn" id="rec-import-btn" onclick="confirmRecImport()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Lançar</button>
-      <div id="rec-import-msg" style="margin-top:8px;text-align:center;font-size:.85rem"></div>
-    </div>
-
-    <div class="card">
-      <div class="ct"><span class="dot"></span>Novo Recebimento</div>
-      <div class="fg">
-        <div><label>Obra</label><select id="rec-obra"></select></div>
-        <div><label>Data</label><input type="date" id="rec-data"></div>
-        <div class="s2"><label>Descrição</label><input type="text" id="rec-desc" placeholder="Ex: Parcela 3 comprador João..."></div>
-        <div><label>Cliente</label><input type="text" id="rec-cliente" placeholder="Ex: João Silva"></div>
-        <div><label>Tipo</label><select id="rec-tipo">
-          <option>Parcela comprador</option>
-          <option>Entrada</option>
-          <option>Financiamento bancário</option>
-          <option>Sinal</option>
-          <option>Outros</option>
-        </select></div>
-        <div><label>Valor (R$)</label><input type="number" id="rec-valor" placeholder="0,00" step="0.01"></div>
-      </div>
-      <hr>
-      <button class="btn bp" onclick="addRecebimento()" style="width:100%">+ Registrar Recebimento</button>
-      <div id="rec-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
-    </div>
-    <div class="card">
-      <div class="ct"><span class="dot"></span>Por Cliente</div>
-      <div id="rec-clientes"></div>
-    </div>
-    <div class="card">
-      <div class="ct"><span class="dot"></span>Histórico de Recebimentos</div>
-      <div id="rec-list"></div>
     </div>
   </div>
 
@@ -423,7 +432,9 @@ function go(id, btn){
   else if(id==='etapas') renderEtapas();
   else if(id==='obras') renderObras();
   else if(id==='comparativo') renderCmp();
+  else if(id==='catalogo') renderCatalogo();
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
+  else if(id==='recebimentos') renderRecebimentosPage();
   else if(id==='caixa') renderCaixa();
 }
 
@@ -529,7 +540,9 @@ async function lancar(){
 
 function renderLancs(){
   buildSel('la-sel','l');
+  var q=(document.getElementById('la-search')?document.getElementById('la-search').value:'').toLowerCase().trim();
   var la=lancs.filter(function(l){ return Number(l.obra_id)===Number(obraId); }).slice().sort(function(a,b){ return new Date(b.data) - new Date(a.data); });
+  if(q) la=la.filter(function(l){ return ((l.descricao||'')+' '+(l.ref||'')+' '+(l.etapa||'')).toLowerCase().indexOf(q)>=0; });
   var el=document.getElementById('la-list');
   if(la.length===0){ el.innerHTML='<div class="empty"><span class="ic">📋</span>Nenhum lançamento</div>'; return; }
   var h='';
@@ -731,6 +744,50 @@ async function confirmImp(){
   document.getElementById('imp-code').value='';
   document.getElementById('imp-prev').innerHTML='';
   impBuf=null;
+}
+
+function renderCatalogo(){
+  var q=(document.getElementById('cat-search').value||'').toLowerCase().trim();
+  var el=document.getElementById('cat-list');
+  var contagem={};
+  for(var i=0;i<lancs.length;i++){
+    var pid=lancs[i].item_padrao_id;
+    if(pid) contagem[pid]=(contagem[pid]||0)+1;
+  }
+  var itens=itensPadrao.slice();
+  if(q) itens=itens.filter(function(ip){ return ip.nome.toLowerCase().indexOf(q)>=0; });
+  itens.sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+  if(itens.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">🏷️</span>Nenhum item encontrado</div></div>'; return; }
+  var h='';
+  for(var i=0;i<itens.length;i++){
+    var ip=itens[i];
+    var qtd=contagem[ip.id]||0;
+    h+='<div class="ec"><div style="font-size:1.4rem">🏷️</div><div class="ei"><strong>'+ip.nome+'</strong><span>'+(ip.categoria||'')+' · '+(ip.unid||'un')+' · '+qtd+' lançamento'+(qtd!==1?'s':'')+' vinculado'+(qtd!==1?'s':'')+'</span></div>';
+    h+='<button class="btn" onclick="renomearItemCatalogo('+ip.id+')" style="background:var(--light);color:var(--navy);font-size:.75rem;padding:6px 10px;margin-right:6px">✏️</button>';
+    h+='<button class="btn bd" onclick="delItemCatalogo('+ip.id+','+qtd+')">✕</button></div>';
+  }
+  el.innerHTML=h;
+}
+
+async function renomearItemCatalogo(id){
+  var ip=itensPadrao.find(function(x){return x.id===id;});
+  if(!ip) return;
+  var novo=prompt('Novo nome para este item:', ip.nome);
+  if(!novo || novo.trim()===''||novo.trim()===ip.nome) return;
+  loading(true);
+  var r=await sb.from('itens_padrao').update({nome:novo.trim()}).eq('id',id).select();
+  loading(false);
+  if(r.data && r.data.length>0){ ip.nome=r.data[0].nome; renderCatalogo(); }
+}
+
+async function delItemCatalogo(id, qtd){
+  if(qtd>0){ alert('Este item tem '+qtd+' lançamento(s) vinculado(s) — não pode ser excluído. Desvincule primeiro se necessário.'); return; }
+  if(!confirm('Excluir este item do catálogo?')) return;
+  loading(true);
+  await sb.from('itens_padrao').delete().eq('id',id);
+  itensPadrao=itensPadrao.filter(function(x){return x.id!==id;});
+  loading(false);
+  renderCatalogo();
 }
 
 function sparkline(vals){
@@ -1188,7 +1245,7 @@ var contratosClientes = [];
 var aportes = [];
 
 function cxTab(tab){
-  var tabs = ['resumo','receber','aporte'];
+  var tabs = ['resumo','aporte'];
   tabs.forEach(function(t){
     document.getElementById('cxpanel-'+t).style.display = t===tab?'block':'none';
     var btn = document.getElementById('cxtab-'+t);
@@ -1198,8 +1255,23 @@ function cxTab(tab){
     }
   });
   if(tab==='resumo') renderCxResumo();
-  if(tab==='receber') renderRecebimentos();
   if(tab==='aporte') renderAportes();
+}
+
+async function renderRecebimentosPage(){
+  loading(true);
+  var r1 = await sb.from('recebimentos').select('*').order('data');
+  var r5 = await sb.from('contratos_clientes').select('*');
+  recebimentos = r1.data||[];
+  contratosClientes = r5.data||[];
+  loading(false);
+
+  document.getElementById('rec-obra').innerHTML = obras.map(function(o){
+    return '<option value="'+o.id+'">'+o.nome+'</option>';
+  }).join('');
+  document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
+
+  renderRecebimentos();
 }
 
 async function renderCaixa(){
@@ -1210,15 +1282,7 @@ async function renderCaixa(){
   aportes = r2.data||[];
   loading(false);
 
-  document.getElementById('rec-obra').innerHTML = obras.map(function(o){
-    return '<option value="'+o.id+'">'+o.nome+'</option>';
-  }).join('');
-  document.getElementById('rec-data').value = new Date().toISOString().split('T')[0];
   document.getElementById('ap-data').value = new Date().toISOString().split('T')[0];
-  document.getElementById('ext-obra').innerHTML = obras.map(function(o){
-    return '<option value="'+o.id+'">'+o.nome+'</option>';
-  }).join('');
-  document.getElementById('ext-mes').value = new Date().toISOString().slice(0,7);
 
   renderCxCards();
   renderCxResumo();
@@ -1287,7 +1351,9 @@ function renderCxResumo(){
 
 function renderRecebimentos(){
   renderRecClientes();
+  var q=(document.getElementById('rec-search')?document.getElementById('rec-search').value:'').toLowerCase().trim();
   var la = recebimentos.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
+  if(q) la=la.filter(function(r){ return ((r.descricao||'')+' '+(r.cliente||'')+' '+(r.tipo||'')).toLowerCase().indexOf(q)>=0; });
   var el = document.getElementById('rec-list');
   if(la.length===0){el.innerHTML='<div class="empty"><span class="ic">📥</span>Nenhum recebimento</div>';return;}
   var h='';
