@@ -99,6 +99,8 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <button onclick="go('fiscal',this)">📄 Fiscal</button>
 <button onclick="go('recebimentos',this)">👥 Recebimentos</button>
 <button onclick="go('caixa',this)">💰 Caixa</button>
+<button onclick="go('fornecedores',this)">🚚 Fornecedores</button>
+<button onclick="go('auditoria',this)">🔒 Auditoria</button>
 </nav>
 <main>
 <div id="page-dashboard" class="page active">
@@ -180,6 +182,17 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <button class="btn bp" onclick="parseImp()" style="width:100%;margin-bottom:8px">🔍 Visualizar</button>
 <button class="btn" id="imp-btn" onclick="confirmImp()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Lançar</button>
 <div id="imp-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
+</div>
+<div class="card">
+<div class="ct"><span class="dot"></span>Importar Plano de Viabilidade</div>
+<p style="font-size:.83rem;color:var(--gray);margin-bottom:14px;line-height:1.6">Depois de aprovar um estudo no Simulador de Viabilidade, cole aqui o código ALPHAFOZ-ORC:: pra criar a obra já com o orçamento por etapa carregado.</p>
+<label>Código ALPHAFOZ-ORC::</label>
+<textarea id="orc-code" rows="5" placeholder="Cole aqui..."></textarea>
+<hr>
+<div id="orc-prev"></div>
+<button class="btn bp" onclick="parseOrcImp()" style="width:100%;margin-bottom:8px">🔍 Visualizar</button>
+<button class="btn" id="orc-btn" onclick="confirmOrcImp()" style="width:100%;background:var(--green);color:#fff;display:none">✓ Confirmar e Criar</button>
+<div id="orc-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
 </div>
 <div class="card" style="background:var(--navy);color:#fff">
 <div class="ct" style="color:var(--gold2)"><span class="dot"></span>Como usar</div>
@@ -387,6 +400,23 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
   </div>
 
 </div>
+
+<div id="page-fornecedores" class="page">
+<div class="card">
+<div class="ct"><span class="dot"></span>Fornecedores</div>
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cadastro auto-populado a partir dos lançamentos. Clique num fornecedor para editar CNPJ/telefone/contato.</p>
+<input type="text" id="forn-search" placeholder="🔍 Buscar fornecedor..." oninput="renderFornecedores()" style="margin-bottom:12px">
+</div>
+<div id="forn-list"></div>
+</div>
+
+<div id="page-auditoria" class="page">
+<div class="card">
+<div class="ct"><span class="dot"></span>Trilha de Auditoria</div>
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Registro automático de toda edição/exclusão de lançamentos e recebimentos — quando e o que mudou.</p>
+</div>
+<div id="aud-list"></div>
+</div>
 </main>
 <script>
 var SURL = 'https://oososnfairagctqhdykp.supabase.co';
@@ -453,6 +483,8 @@ function go(id, btn){
   else if(id==='obras') renderObras();
   else if(id==='comparativo'){ renderCmp(); renderCatalogo(); }
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
+  else if(id==='fornecedores') renderFornecedores();
+  else if(id==='auditoria') renderAuditoria();
   else if(id==='recebimentos') renderRecebimentosPage();
   else if(id==='caixa') renderCaixa();
 }
@@ -597,20 +629,29 @@ function renderEtapas(){
     if(!em[et]) em[et]=[];
     em[et].push(la[i]);
   }
+  var orcObra={};
+  for(var i=0;i<orcamentos.length;i++){
+    if(Number(orcamentos[i].obra_id)===Number(obraId)) orcObra[orcamentos[i].etapa]=Number(orcamentos[i].valor_orcado)||0;
+  }
+  var allKeys={};
+  Object.keys(em).forEach(function(k){ allKeys[k]=true; });
+  Object.keys(orcObra).forEach(function(k){ allKeys[k]=true; });
   var el=document.getElementById('et-list');
-  var keys=Object.keys(em).sort(function(a,b){
+  var keys=Object.keys(allKeys).sort(function(a,b){
     var ta=0,tb=0;
-    for(var i=0;i<em[a].length;i++) ta+=em[a][i].valor||0;
-    for(var i=0;i<em[b].length;i++) tb+=em[b][i].valor||0;
+    if(em[a]) for(var i=0;i<em[a].length;i++) ta+=em[a][i].valor||0;
+    if(em[b]) for(var i=0;i<em[b].length;i++) tb+=em[b][i].valor||0;
     return tb-ta;
   });
   if(keys.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">🏗️</span>Nenhum lançamento</div></div>'; return; }
   var h='';
   for(var k=0;k<keys.length;k++){
     var et=keys[k];
-    var items=em[et];
+    var items=em[et]||[];
     var tot=0;
     for(var i=0;i<items.length;i++) tot+=items[i].valor||0;
+    var orcado=orcObra[et]||0;
+    var pctOrc = orcado>0 ? Math.round(tot/orcado*100) : null;
     var isTer=et==='Aquisição do Terreno';
     var m2v=(!isTer&&found&&found.m2>0)?(tot/found.m2).toFixed(0):'—';
     var eid='et_'+k;
@@ -622,6 +663,11 @@ function renderEtapas(){
     h+='<span style="font-weight:700;font-size:.95rem;color:var(--green);margin-right:10px">'+fmt(tot)+'</span>';
     h+='<span id="arr_'+eid+'" style="color:var(--gray);font-size:.8rem">▼</span>';
     h+='</div>';
+    if(orcado>0){
+      var barColor = pctOrc>=100 ? 'var(--red)' : (pctOrc>=80 ? 'var(--gold2)' : 'var(--green)');
+      h+='<div style="padding:0 20px 12px"><div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--gray);margin-bottom:4px"><span>Orçado: '+fmt(orcado)+'</span><span style="color:'+barColor+';font-weight:700">'+pctOrc+'%'+(pctOrc>=100?' ⚠️ estourou':'')+'</span></div>';
+      h+='<div style="background:var(--light);border-radius:4px;height:6px;overflow:hidden"><div style="background:'+barColor+';height:100%;width:'+Math.min(100,pctOrc)+'%"></div></div></div>';
+    }
     h+='<div id="'+eid+'" style="display:none;border-top:1px solid var(--light);padding:0 20px 16px">';
     var sorted=items.slice().sort(function(a,b){ return new Date(b.data)-new Date(a.data); });
     for(var i=0;i<sorted.length;i++){
@@ -630,10 +676,26 @@ function renderEtapas(){
       var unitStr=hasUnit?' <span style="font-size:.7rem;color:var(--gray)">'+l.qtd+' '+(l.unid||'un')+' x R$'+(l.unitario||0).toLocaleString('pt-BR',{minimumFractionDigits:2})+'</span>':'';
       h+='<div class="li"><div class="ld">'+fdate(l.data)+'</div><div class="li_i"><div class="li_d">'+(l.descricao||'')+'</div><div class="li_s"><span class="eb '+badgeCls(l.tipo)+'">'+l.tipo+'</span>'+unitStr+(l.ref?' - '+l.ref:'')+'</div></div><div class="li_v">'+fmt(l.valor)+'</div><button class="li_x" onclick="delL('+l.id+')">X</button></div>';
     }
+    if(items.length===0) h+='<div class="empty" style="padding:16px 0"><span class="ic">📋</span>Sem lançamentos ainda</div>';
     h+='<hr><div style="display:flex;justify-content:space-between;font-weight:700;font-size:.92rem;padding-top:8px"><span>Total</span><span>'+fmt(tot)+'</span></div>';
+    h+='<button class="btn" onclick="event.stopPropagation();editarOrcamento(\''+et.replace(/'/g,"\\'")+'\','+orcado+')" style="width:100%;margin-top:10px;background:var(--light);color:var(--navy);font-size:.78rem">💰 '+(orcado>0?'Editar':'Definir')+' Orçamento desta Etapa</button>';
     h+='</div></div>';
   }
   el.innerHTML=h;
+}
+
+async function editarOrcamento(etapa, atual){
+  var novo=prompt('Valor orçado para "'+etapa+'" (R$):', atual>0?atual:'');
+  if(novo===null) return;
+  var valor=parseFloat(novo.replace(',','.'))||0;
+  loading(true);
+  var r=await sb.from('orcamentos').upsert([{obra_id:obraId, etapa:etapa, valor_orcado:valor}], {onConflict:'obra_id,etapa'}).select();
+  loading(false);
+  if(r.data && r.data.length>0){
+    var idx=orcamentos.findIndex(function(o){return o.obra_id===obraId && o.etapa===etapa;});
+    if(idx>=0) orcamentos[idx]=r.data[0]; else orcamentos.push(r.data[0]);
+    renderEtapas();
+  }
 }
 
 function toggleEtapa(el){
@@ -663,9 +725,36 @@ function renderObras(){
     }
     var custo=mat+mo;
     var m2v=o.m2>0?Math.round(custo/o.m2):0;
-    h+='<div class="ec"><div style="font-size:1.6rem">🏗️</div><div class="ei"><strong>'+o.nome+'</strong><span>'+o.tipo+' · '+o.m2+' m² · '+(o.local||'')+'</span><span style="font-size:.73rem;color:var(--gray)">Custo: '+fmt(custo)+' · R$'+m2v.toLocaleString('pt-BR')+'/m²</span></div><button class="btn bd" onclick="delO('+o.id+')">✕</button></div>';
+    var orcObra=orcamentos.filter(function(x){return Number(x.obra_id)===Number(o.id);});
+    var orcTotal=orcObra.reduce(function(s,x){return s+(Number(x.valor_orcado)||0);},0);
+    var pctGasto = orcTotal>0 ? Math.round(custo/orcTotal*100) : null;
+    var prog=progressoFisico.find(function(p){return Number(p.obra_id)===Number(o.id) && p.etapa==='GERAL';});
+    var pctFisico = prog ? Number(prog.pct_concluido) : null;
+    h+='<div class="ec"><div style="font-size:1.6rem">🏗️</div><div class="ei"><strong>'+o.nome+'</strong><span>'+o.tipo+' · '+o.m2+' m² · '+(o.local||'')+'</span><span style="font-size:.73rem;color:var(--gray)">Custo: '+fmt(custo)+' · R$'+m2v.toLocaleString('pt-BR')+'/m²</span>';
+    if(pctFisico!==null || pctGasto!==null){
+      var alerta = (pctFisico!==null && pctGasto!==null && (pctGasto-pctFisico)>15);
+      h+='<div style="margin-top:6px;display:flex;gap:10px;align-items:center;font-size:.72rem">';
+      if(pctFisico!==null) h+='<span style="color:var(--navy)">🏗️ '+pctFisico+'% obra</span>';
+      if(pctGasto!==null) h+='<span style="color:'+(alerta?'var(--red)':'var(--gray)')+'">💰 '+pctGasto+'% orçamento'+(alerta?' ⚠️':'')+'</span>';
+      h+='</div>';
+    }
+    h+='</div><button class="btn" onclick="editarProgresso('+o.id+','+(pctFisico!==null?pctFisico:0)+')" style="background:var(--light);color:var(--navy);font-size:.72rem;padding:6px 10px;margin-right:6px">📐</button><button class="btn bd" onclick="delO('+o.id+')">✕</button></div>';
   }
   document.getElementById('o-list').innerHTML=h;
+}
+
+async function editarProgresso(oid, atual){
+  var novo=prompt('% físico concluído da obra (0-100):', atual);
+  if(novo===null) return;
+  var pct=Math.max(0,Math.min(100, parseFloat(novo.replace(',','.'))||0));
+  loading(true);
+  var r=await sb.from('progresso_fisico').upsert([{obra_id:oid, etapa:'GERAL', pct_concluido:pct, atualizado_em:new Date().toISOString()}], {onConflict:'obra_id,etapa'}).select();
+  loading(false);
+  if(r.data && r.data.length>0){
+    var idx=progressoFisico.findIndex(function(p){return p.obra_id===oid && p.etapa==='GERAL';});
+    if(idx>=0) progressoFisico[idx]=r.data[0]; else progressoFisico.push(r.data[0]);
+    renderObras();
+  }
 }
 
 async function addObra(){
@@ -763,6 +852,63 @@ async function confirmImp(){
   document.getElementById('imp-code').value='';
   document.getElementById('imp-prev').innerHTML='';
   impBuf=null;
+}
+
+var orcBuf=null;
+
+function parseOrcImp(){
+  var raw=document.getElementById('orc-code').value.trim();
+  var msg=document.getElementById('orc-msg');
+  var prev=document.getElementById('orc-prev');
+  var btn=document.getElementById('orc-btn');
+  if(!raw){ msg.style.color='var(--red)'; msg.textContent='Cole o código primeiro.'; return; }
+  try{
+    var js=raw.indexOf('ALPHAFOZ-ORC::')>=0?raw.split('ALPHAFOZ-ORC::')[1]:raw;
+    var d=JSON.parse(js);
+    orcBuf=d;
+    var totOrc=0;
+    for(var i=0;i<d.orcamento.length;i++) totOrc+=d.orcamento[i].valor||0;
+    var h='<div style="background:var(--cream);border-radius:10px;padding:14px;margin-bottom:12px"><div style="font-weight:600;margin-bottom:4px">'+d.obra.nome+'</div><div style="font-size:.75rem;color:var(--gray);margin-bottom:10px">'+d.obra.tipo+' · '+d.obra.m2+' m² · '+(d.obra.local||'')+'</div>';
+    for(var i=0;i<d.orcamento.length;i++){
+      var o=d.orcamento[i];
+      h+='<div class="li"><div class="li_i"><div class="li_d">'+o.etapa+'</div></div><div class="li_v">'+fmt(o.valor)+'</div></div>';
+    }
+    h+='<hr><div style="display:flex;justify-content:space-between;font-weight:700"><span>Orçamento Total</span><span style="color:var(--green)">'+fmt(totOrc)+'</span></div></div>';
+    prev.innerHTML=h;
+    btn.style.display='block';
+    msg.textContent='';
+  } catch(e){
+    msg.style.color='var(--red)'; msg.textContent='Código inválido: '+e.message;
+    btn.style.display='none';
+  }
+}
+
+async function confirmOrcImp(){
+  if(!orcBuf) return;
+  var d=orcBuf;
+  loading(true);
+  var obraExistente=obras.find(function(o){return o.nome===d.obra.nome;});
+  var obra=obraExistente;
+  if(!obra){
+    var r=await sb.from('obras').insert([{nome:d.obra.nome, m2:d.obra.m2||0, local:d.obra.local||'', tipo:d.obra.tipo||'Residencial Unifamiliar', ano:d.obra.ano||new Date().getFullYear()}]).select();
+    if(r.data && r.data.length>0){ obra=r.data[0]; obras.push(obra); }
+  }
+  if(!obra){ loading(false); document.getElementById('orc-msg').textContent='Erro ao criar obra.'; return; }
+  var rows=d.orcamento.map(function(o){ return {obra_id:obra.id, etapa:o.etapa, valor_orcado:o.valor}; });
+  var r2=await sb.from('orcamentos').upsert(rows, {onConflict:'obra_id,etapa'}).select();
+  if(r2.data) for(var i=0;i<r2.data.length;i++){
+    var idx=orcamentos.findIndex(function(x){return x.obra_id===r2.data[i].obra_id && x.etapa===r2.data[i].etapa;});
+    if(idx>=0) orcamentos[idx]=r2.data[i]; else orcamentos.push(r2.data[i]);
+  }
+  obraId=obra.id; updateBadge();
+  loading(false);
+  var tot=0; for(var i=0;i<d.orcamento.length;i++) tot+=d.orcamento[i].valor||0;
+  document.getElementById('orc-msg').style.color='var(--green)';
+  document.getElementById('orc-msg').textContent='✓ Obra "'+obra.nome+'" com orçamento de '+fmt(tot)+' carregado';
+  document.getElementById('orc-btn').style.display='none';
+  document.getElementById('orc-code').value='';
+  document.getElementById('orc-prev').innerHTML='';
+  orcBuf=null;
 }
 
 function renderCatalogo(){
@@ -1275,6 +1421,9 @@ function imprimirFiscal(){
 // ---- CAIXA ----
 var recebimentos = [];
 var contratosClientes = [];
+var orcamentos = [];
+var progressoFisico = [];
+var fornecedores = [];
 var aportes = [];
 
 function cxTab(tab){
@@ -1746,6 +1895,68 @@ async function delAp(id){
   renderCxCards();
 }
 
+function renderFornecedores(){
+  var q=(document.getElementById('forn-search').value||'').toLowerCase().trim();
+  var gastoPorFornecedor={};
+  for(var i=0;i<lancs.length;i++){
+    var ref=lancs[i].ref;
+    if(!ref) continue;
+    gastoPorFornecedor[ref]=(gastoPorFornecedor[ref]||0)+(Number(lancs[i].valor)||0);
+  }
+  var lista=fornecedores.slice();
+  if(q) lista=lista.filter(function(f){ return f.nome.toLowerCase().indexOf(q)>=0; });
+  lista.sort(function(a,b){ return (gastoPorFornecedor[b.nome]||0)-(gastoPorFornecedor[a.nome]||0); });
+  var el=document.getElementById('forn-list');
+  if(lista.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">🚚</span>Nenhum fornecedor encontrado</div></div>'; return; }
+  var h='';
+  for(var i=0;i<lista.length;i++){
+    var f=lista[i];
+    var gasto=gastoPorFornecedor[f.nome]||0;
+    var qtdCompras=lancs.filter(function(l){return l.ref===f.nome;}).length;
+    h+='<div class="ec" style="cursor:pointer" onclick="editarFornecedor('+f.id+')"><div style="font-size:1.4rem">🚚</div><div class="ei"><strong>'+f.nome+'</strong><span>'+(f.cnpj?'CNPJ: '+f.cnpj+' · ':'')+(f.telefone||'sem telefone cadastrado')+'</span><span style="font-size:.73rem;color:var(--gray)">Total gasto: '+fmt(gasto)+' · '+qtdCompras+' compra'+(qtdCompras!==1?'s':'')+'</span></div></div>';
+  }
+  el.innerHTML=h;
+}
+
+async function editarFornecedor(id){
+  var f=fornecedores.find(function(x){return x.id===id;});
+  if(!f) return;
+  var cnpj=prompt('CNPJ (opcional):', f.cnpj||'');
+  if(cnpj===null) return;
+  var telefone=prompt('Telefone (opcional):', f.telefone||'');
+  if(telefone===null) return;
+  var contato=prompt('Nome do contato (opcional):', f.contato||'');
+  if(contato===null) return;
+  loading(true);
+  var r=await sb.from('fornecedores').update({cnpj:cnpj||null, telefone:telefone||null, contato:contato||null}).eq('id',id).select();
+  loading(false);
+  if(r.data && r.data.length>0){
+    var idx=fornecedores.findIndex(function(x){return x.id===id;});
+    fornecedores[idx]=r.data[0];
+    renderFornecedores();
+  }
+}
+
+async function renderAuditoria(){
+  loading(true);
+  var r=await sb.from('audit_log').select('*').order('criado_em',{ascending:false}).limit(100);
+  loading(false);
+  var logs=r.data||[];
+  var el=document.getElementById('aud-list');
+  if(logs.length===0){ el.innerHTML='<div class="card"><div class="empty"><span class="ic">🔒</span>Nenhum registro de auditoria ainda</div></div>'; return; }
+  var h='';
+  for(var i=0;i<logs.length;i++){
+    var l=logs[i];
+    var opColor = l.operacao==='DELETE'?'var(--red)':(l.operacao==='INSERT'?'var(--green)':'var(--gold2)');
+    var opLabel = l.operacao==='DELETE'?'Excluído':(l.operacao==='INSERT'?'Criado':'Editado');
+    var dados = l.dados_novos || l.dados_antigos || {};
+    var desc = dados.descricao || dados.tipo || ('#'+l.registro_id);
+    var valor = dados.valor;
+    h+='<div class="li"><div class="ld" style="font-size:.68rem">'+new Date(l.criado_em).toLocaleString('pt-BR')+'</div><div class="li_i"><div class="li_d">'+desc+'</div><div class="li_s"><span class="eb" style="background:'+opColor+';color:#fff">'+opLabel+'</span> '+l.tabela+'</div></div>'+(valor?'<div class="li_v">'+fmt(valor)+'</div>':'')+'</div>';
+  }
+  document.getElementById('aud-list').innerHTML='<div class="card">'+h+'</div>';
+}
+
 async function init(){
   try{
     var ok=await migrate();
@@ -1756,12 +1967,18 @@ async function init(){
     var r3=await sb.from('itens_padrao').select('*').order('nome');
     var r4=await sb.from('recebimentos').select('*').order('data');
     var r5=await sb.from('contratos_clientes').select('*');
+    var r6=await sb.from('orcamentos').select('*');
+    var r7=await sb.from('progresso_fisico').select('*');
+    var r8=await sb.from('fornecedores').select('*').order('nome');
     if(r1.error){ showErr('Erro: '+r1.error.message); return; }
     obras=r1.data||[];
     lancs=r2.data||[];
     itensPadrao=r3.data||[];
     recebimentos=r4.data||[];
     contratosClientes=r5.data||[];
+    orcamentos=r6.data||[];
+    progressoFisico=r7.data||[];
+    fornecedores=r8.data||[];
     if(obras.length>0) obraId=obras[0].id;
     loading(false);
     renderDash();
