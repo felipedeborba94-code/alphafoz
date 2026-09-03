@@ -91,13 +91,11 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </header>
 <nav>
 <button class="active" onclick="go('dashboard',this)">📊 Resumo</button>
-<button onclick="go('lancar',this)">➕ Lançar</button>
 <button onclick="go('lancamentos',this)">📋 Lançamentos</button>
 <button onclick="go('etapas',this)">🏗️ Por Etapa</button>
 <button onclick="go('obras',this)">🏢 Obras</button>
 <button onclick="go('importar',this)">📷 Importar</button>
 <button onclick="go('comparativo',this)">📈 Comparativo</button>
-<button onclick="go('catalogo',this)">🏷️ Catálogo</button>
 <button onclick="go('fiscal',this)">📄 Fiscal</button>
 <button onclick="go('recebimentos',this)">👥 Recebimentos</button>
 <button onclick="go('caixa',this)">💰 Caixa</button>
@@ -108,9 +106,12 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <div class="sg" id="ds-cards"></div>
 <div class="card"><div class="ct"><span class="dot"></span>Custo por Etapa</div><div id="ds-etapas"></div></div>
 </div>
-<div id="page-lancar" class="page">
-<div class="card">
-<div class="ct"><span class="dot"></span>Novo Lançamento</div>
+<div id="page-lancamentos" class="page">
+<div class="card" style="padding:0;overflow:hidden">
+<div data-eid="lform" onclick="toggleEtapa(this)" style="display:flex;align-items:center;padding:16px 20px;cursor:pointer">
+<span class="dot" style="margin-right:10px"></span><span style="font-weight:700;font-size:.95rem;flex:1">+ Novo Lançamento</span><span id="arr_lform" style="color:var(--gray);font-size:.8rem">▼</span>
+</div>
+<div id="lform" style="display:none;border-top:1px solid var(--light);padding:16px 20px">
 <div class="fg">
 <div><label>Obra</label><select id="l-obra"></select></div>
 <div><label>Data</label><input type="date" id="l-data"></div>
@@ -146,7 +147,6 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <div id="l-msg" style="margin-top:10px;text-align:center;font-size:.85rem"></div>
 </div>
 </div>
-<div id="page-lancamentos" class="page">
 <div class="os" id="la-sel"></div>
 <div class="card"><div class="ct"><span class="dot"></span>Lançamentos</div><input type="text" id="la-search" placeholder="🔍 Buscar por descrição, fornecedor..." oninput="renderLancs()" style="margin-bottom:12px"><div id="la-list"></div></div>
 </div>
@@ -204,15 +204,17 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 </div>
 <div id="cmp-conting"></div>
 <div id="cmp-list"></div>
-</div>
 
-<div id="page-catalogo" class="page">
-<div class="card">
-<div class="ct"><span class="dot"></span>Catálogo de Itens Padrão</div>
-<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Itens usados pra padronizar o Comparativo de Preços. Renomeie pra corrigir nomes, ou apague itens sem uso (nunca apaga um item com lançamentos vinculados).</p>
-<input type="text" id="cat-search" placeholder="🔍 Buscar item..." oninput="renderCatalogo()" style="margin-bottom:12px">
+<div class="card" style="padding:0;overflow:hidden">
+<div data-eid="catbox" onclick="toggleEtapa(this)" style="display:flex;align-items:center;padding:16px 20px;cursor:pointer">
+<span class="dot" style="margin-right:10px"></span><span style="font-weight:700;font-size:.95rem;flex:1">🏷️ Catálogo de Itens Padrão</span><span id="arr_catbox" style="color:var(--gray);font-size:.8rem">▼</span>
 </div>
+<div id="catbox" style="display:none;border-top:1px solid var(--light);padding:16px 20px">
+<p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Itens usados pra padronizar o Comparativo. Renomeie pra corrigir nomes, ou apague itens sem uso.</p>
+<input type="text" id="cat-search" placeholder="🔍 Buscar item..." oninput="renderCatalogo()" style="margin-bottom:12px">
 <div id="cat-list"></div>
+</div>
+</div>
 </div>
 
 <!-- FISCAL -->
@@ -265,6 +267,10 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 
 <!-- CAIXA -->
 <div id="page-recebimentos" class="page">
+  <div class="card">
+    <div class="ct"><span class="dot"></span>Resumo · Projetado a Receber</div>
+    <div id="rec-resumo"></div>
+  </div>
   <div class="card">
     <div class="ct"><span class="dot"></span>Importar Parcelas em Lote</div>
     <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Cole o código ALPHAFOZ-REC:: gerado pelo Claude para lançar várias parcelas de uma vez.</p>
@@ -427,12 +433,10 @@ function go(id, btn){
   document.getElementById('page-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
   if(id==='dashboard') renderDash();
-  else if(id==='lancar') renderLancar();
-  else if(id==='lancamentos') renderLancs();
+  else if(id==='lancamentos'){ renderLancar(); renderLancs(); }
   else if(id==='etapas') renderEtapas();
   else if(id==='obras') renderObras();
-  else if(id==='comparativo') renderCmp();
-  else if(id==='catalogo') renderCatalogo();
+  else if(id==='comparativo'){ renderCmp(); renderCatalogo(); }
   else if(id==='fiscal'){ renderFiscal(); calcFiscal(); }
   else if(id==='recebimentos') renderRecebimentosPage();
   else if(id==='caixa') renderCaixa();
@@ -1350,6 +1354,7 @@ function renderCxResumo(){
 }
 
 function renderRecebimentos(){
+  renderRecResumo();
   renderRecClientes();
   var q=(document.getElementById('rec-search')?document.getElementById('rec-search').value:'').toLowerCase().trim();
   var la = recebimentos.slice().sort(function(a,b){return new Date(b.data)-new Date(a.data);});
@@ -1362,6 +1367,46 @@ function renderRecebimentos(){
     var on=(obras.find(function(o){return Number(o.id)===Number(r.obra_id);})||{}).nome||'';
     h+='<div class="li"><div class="ld">'+fdate(r.data)+'</div><div class="li_i"><div class="li_d">'+(r.descricao||'')+'</div><div class="li_s">'+on+' · <span class="eb bm">'+r.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(r.valor)+'</div><button class="li_x" onclick="delRec('+r.id+')">✕</button></div>';
   }
+  el.innerHTML=h;
+}
+
+function renderRecResumo(){
+  var el=document.getElementById('rec-resumo');
+  if(!el) return;
+  var porObra={};
+  for(var i=0;i<obras.length;i++) porObra[obras[i].id]={nome:obras[i].nome, recebido:0, projetado:0, clientesPendentes:0};
+  for(var i=0;i<recebimentos.length;i++){
+    var r=recebimentos[i];
+    if(porObra[r.obra_id]) porObra[r.obra_id].recebido += Number(r.valor)||0;
+  }
+  for(var i=0;i<contratosClientes.length;i++){
+    var c=contratosClientes[i];
+    var itemsCli=recebimentos.filter(function(r){return r.cliente===c.cliente && r.tipo==='Parcela comprador';});
+    var numerosUnicos={};
+    for(var pi=0;pi<itemsCli.length;pi++){
+      var mNum=(itemsCli[pi].descricao||'').match(/(\d+)\/\d+/);
+      var chave=mNum?mNum[1]:('_row'+itemsCli[pi].id);
+      numerosUnicos[chave]=true;
+    }
+    var numPagas=Object.keys(numerosUnicos).length;
+    var faltaParcelas=Math.max(0, c.num_parcelas-numPagas);
+    var valorParcela=c.valor_total_parcelas/c.num_parcelas;
+    var faltaValor=faltaParcelas*valorParcela;
+    if(porObra[c.obra_id]){
+      porObra[c.obra_id].projetado += faltaValor;
+      if(faltaValor>0) porObra[c.obra_id].clientesPendentes++;
+    }
+  }
+  var keys=Object.keys(porObra).filter(function(k){ return porObra[k].recebido>0 || porObra[k].projetado>0; });
+  keys.sort(function(a,b){ return porObra[b].projetado-porObra[a].projetado; });
+  if(keys.length===0){ el.innerHTML='<div class="empty"><span class="ic">📊</span>Nenhum dado ainda</div>'; return; }
+  var h='<div class="sg" style="margin-bottom:0">';
+  for(var i=0;i<keys.length;i++){
+    var o=porObra[keys[i]];
+    h+='<div class="sc gold"><div class="lb">'+o.nome+' · Recebido</div><div class="vl">'+fmt(o.recebido)+'</div><div class="sb">Total já entrado</div></div>';
+    h+='<div class="sc"><div class="lb">'+o.nome+' · A Receber</div><div class="vl">'+fmt(o.projetado)+'</div><div class="sb">'+(o.clientesPendentes>0?o.clientesPendentes+' cliente(s) pendente(s)':'Todos quitados ✓')+'</div></div>';
+  }
+  h+='</div>';
   el.innerHTML=h;
 }
 
