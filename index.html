@@ -250,18 +250,6 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       Preencha o valor de venda para calcular.
     </div>
   </div>
-
-  <div class="card">
-    <div class="ct"><span class="dot"></span>Livro Caixa (Contabilidade)</div>
-    <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Relatório mensal de entradas e saídas por obra, no formato usado pela contabilidade — pronto pra imprimir e enviar.</p>
-    <div class="fg">
-      <div><label>Obra</label><select id="lc-obra"></select></div>
-      <div><label>Mês</label><input type="month" id="lc-mes"></div>
-    </div>
-    <hr>
-    <button class="btn bp" onclick="gerarLivroCaixa()" style="width:100%;margin-bottom:8px">📊 Gerar Relatório</button>
-    <div id="lc-preview"></div>
-  </div>
 </div>
 
 <!-- CAIXA -->
@@ -288,13 +276,15 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
       <div id="cx-socios"></div>
     </div>
     <div class="card">
-      <div class="ct"><span class="dot"></span>Extrato Mensal (Livro Caixa) — para contador</div>
+      <div class="ct"><span class="dot"></span>Livro Caixa (Contabilidade)</div>
+      <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Relatório mensal de entradas e saídas por obra, no formato usado pela contabilidade — pronto pra imprimir e enviar.</p>
       <div class="fg">
-        <div><label>Obra</label><select id="ext-obra"></select></div>
-        <div><label>Mês/Ano</label><input type="month" id="ext-mes"></div>
+        <div><label>Obra</label><select id="lc-obra"></select></div>
+        <div><label>Mês</label><input type="month" id="lc-mes"></div>
       </div>
       <hr>
-      <button class="btn bp" onclick="gerarExtrato()" style="width:100%">🖨️ Gerar Extrato / Imprimir PDF</button>
+      <button class="btn bp" onclick="gerarLivroCaixa()" style="width:100%;margin-bottom:8px">📊 Gerar Relatório</button>
+      <div id="lc-preview"></div>
     </div>
   </div>
 
@@ -880,14 +870,6 @@ function renderFiscal(){
   document.getElementById('fi-corret').value='';
   document.getElementById('fi-result').style.display='none';
   document.getElementById('fi-msg').textContent='Preencha o valor de venda para calcular.';
-  var lcObra=document.getElementById('lc-obra');
-  if(lcObra){
-    var h='';
-    for(var i=0;i<obras.length;i++) h+='<option value="'+obras[i].id+'"'+(Number(obras[i].id)===Number(obraId)?' selected':'')+'>'+obras[i].nome+'</option>';
-    lcObra.innerHTML=h;
-    var mesEl=document.getElementById('lc-mes');
-    if(mesEl && !mesEl.value) mesEl.value=new Date().toISOString().slice(0,7);
-  }
 }
 
 function calcularLivroCaixa(oid, mes){
@@ -1259,6 +1241,15 @@ function renderCxCards(){
 function renderCxResumo(){
   renderCxCards();
 
+  var lcObra=document.getElementById('lc-obra');
+  if(lcObra){
+    var ho='';
+    for(var i=0;i<obras.length;i++) ho+='<option value="'+obras[i].id+'"'+(Number(obras[i].id)===Number(obraId)?' selected':'')+'>'+obras[i].nome+'</option>';
+    lcObra.innerHTML=ho;
+    var mesEl=document.getElementById('lc-mes');
+    if(mesEl && !mesEl.value) mesEl.value=new Date().toISOString().slice(0,7);
+  }
+
   var h='';
   for(var i=0;i<obras.length;i++){
     var o=obras[i];
@@ -1325,13 +1316,20 @@ function renderRecClientes(){
     var cli=keys[k];
     var items=groups[cli].slice().sort(function(a,b){ return new Date(a.data)-new Date(b.data); });
     var total=items.reduce(function(s,r){return s+(Number(r.valor)||0);},0);
-    var on=(obras.find(function(o){return Number(o.id)===Number(items[0].obra_id);})||{}).nome||'';
+    var obraIdCli=items[0].obra_id;
+    var on=(obras.find(function(o){return Number(o.id)===Number(obraIdCli);})||{}).nome||'(sem obra)';
     var contrato=contratosClientes.find(function(c){return c.cliente===cli;});
     var pagasParcelas=items.filter(function(r){return r.tipo==='Parcela comprador';});
     var atrasado=false, diasAtraso=0;
     var faltaValor=null, faltaParcelas=null, pctPago=null;
     if(contrato){
-      var numPagas=pagasParcelas.length;
+      var numerosUnicos={};
+      for(var pi=0;pi<pagasParcelas.length;pi++){
+        var mNum=(pagasParcelas[pi].descricao||'').match(/(\d+)\/\d+/);
+        var chave=mNum?mNum[1]:('_row'+pagasParcelas[pi].id);
+        numerosUnicos[chave]=true;
+      }
+      var numPagas=Object.keys(numerosUnicos).length;
       faltaParcelas=Math.max(0, contrato.num_parcelas-numPagas);
       var valorParcela=contrato.valor_total_parcelas/contrato.num_parcelas;
       faltaValor=faltaParcelas*valorParcela;
@@ -1342,43 +1340,72 @@ function renderRecClientes(){
         if(diasAtraso>40) atrasado=true;
       }
     }
-    infos.push({cli:cli,items:items,total:total,on:on,contrato:contrato,faltaValor:faltaValor,faltaParcelas:faltaParcelas,pctPago:pctPago,atrasado:atrasado,diasAtraso:diasAtraso,idx:k});
+    infos.push({cli:cli,items:items,total:total,on:on,obraIdCli:obraIdCli,contrato:contrato,faltaValor:faltaValor,faltaParcelas:faltaParcelas,pctPago:pctPago,atrasado:atrasado,diasAtraso:diasAtraso,idx:k});
   }
-  infos.sort(function(a,b){
-    if(a.atrasado!==b.atrasado) return a.atrasado?-1:1;
-    return b.total-a.total;
-  });
   if(infos.length===0){ el.innerHTML='<div class="empty"><span class="ic">👥</span>Nenhum cliente ainda</div>'; return; }
+
+  var porObra={};
+  for(var i=0;i<infos.length;i++){
+    var key=infos[i].on;
+    if(!porObra[key]) porObra[key]=[];
+    porObra[key].push(infos[i]);
+  }
+  var obraKeys=Object.keys(porObra).sort(function(a,b){
+    var atrasoA=porObra[a].some(function(x){return x.atrasado;});
+    var atrasoB=porObra[b].some(function(x){return x.atrasado;});
+    if(atrasoA!==atrasoB) return atrasoA?-1:1;
+    var totalA=porObra[a].reduce(function(s,x){return s+x.total;},0);
+    var totalB=porObra[b].reduce(function(s,x){return s+x.total;},0);
+    return totalB-totalA;
+  });
+
   var h='';
-  for(var k=0;k<infos.length;k++){
-    var info=infos[k];
-    var cli=info.cli, items=info.items, total=info.total, on=info.on;
-    var eid='rc_'+info.idx;
-    var cardStyle = info.atrasado ? 'border:1px solid #f0997b;background:#faece7' : 'border:1px solid var(--light);background:#fff';
-    h+='<div style="'+cardStyle+';border-radius:10px;margin-bottom:10px;overflow:hidden">';
-    if(info.atrasado){
-      h+='<div style="padding:8px 16px;background:#f0997b;color:#4a1b0c;font-size:.72rem;font-weight:700">⚠️ Sem pagamento há '+info.diasAtraso+' dias</div>';
+  for(var ok=0;ok<obraKeys.length;ok++){
+    var obraNome=obraKeys[ok];
+    var lista=porObra[obraNome].slice().sort(function(a,b){
+      if(a.atrasado!==b.atrasado) return a.atrasado?-1:1;
+      return b.total-a.total;
+    });
+    var totalObra=lista.reduce(function(s,x){return s+x.total;},0);
+    var temAtraso=lista.some(function(x){return x.atrasado;});
+    var oid='ro_'+ok;
+    h+='<div style="border:1px solid var(--light);border-radius:10px;margin-bottom:10px;overflow:hidden">';
+    h+='<div data-eid="'+oid+'" onclick="toggleEtapa(this)" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer;background:var(--cream)">';
+    h+='<div style="flex:1"><div style="font-weight:700;font-size:.92rem">'+(temAtraso?'⚠️ ':'')+obraNome+'</div><div style="font-size:.72rem;color:var(--gray)">'+lista.length+' cliente'+(lista.length>1?'s':'')+'</div></div>';
+    h+='<div style="font-weight:700;color:var(--green);margin-right:10px">'+fmt(totalObra)+'</div>';
+    h+='<span id="arr_'+oid+'" style="color:var(--gray);font-size:.8rem">▼</span></div>';
+    h+='<div id="'+oid+'" style="display:none;padding:10px 12px">';
+    for(var k=0;k<lista.length;k++){
+      var info=lista[k];
+      var cli=info.cli, items=info.items, total=info.total;
+      var eid='rc_'+ok+'_'+info.idx;
+      var cardStyle = info.atrasado ? 'border:1px solid #f0997b;background:#faece7' : 'border:1px solid var(--light);background:#fff';
+      h+='<div style="'+cardStyle+';border-radius:10px;margin-bottom:8px;overflow:hidden">';
+      if(info.atrasado){
+        h+='<div style="padding:6px 14px;background:#f0997b;color:#4a1b0c;font-size:.7rem;font-weight:700">⚠️ Sem pagamento há '+info.diasAtraso+' dias</div>';
+      }
+      h+='<div data-eid="'+eid+'" onclick="toggleEtapa(this)" style="display:flex;align-items:center;padding:12px 14px;cursor:pointer">';
+      h+='<div style="flex:1"><div style="font-weight:700;font-size:.87rem">'+cli+'</div><div style="font-size:.7rem;color:var(--gray)">'+items.length+' recebimento'+(items.length>1?'s':'')+(info.contrato?' · '+(info.contrato.num_parcelas-info.faltaParcelas)+'/'+info.contrato.num_parcelas+' parcelas':'')+'</div></div>';
+      h+='<div style="text-align:right;margin-right:8px"><div style="font-weight:700;color:var(--green);font-size:.88rem">'+fmt(total)+'</div>';
+      if(info.contrato && info.faltaValor>0) h+='<div style="font-size:.66rem;color:var(--red);font-weight:600">falta '+fmt(info.faltaValor)+'</div>';
+      else if(info.contrato) h+='<div style="font-size:.66rem;color:var(--green);font-weight:600">quitado ✓</div>';
+      h+='</div>';
+      h+='<span id="arr_'+eid+'" style="color:var(--gray);font-size:.78rem">▼</span></div>';
+      if(info.contrato && info.pctPago!==null){
+        var barColor = info.pctPago>=100 ? 'linear-gradient(90deg,#639922,#97c459)' : 'linear-gradient(90deg,var(--gold2),var(--gold3))';
+        h+='<div style="padding:0 14px 10px"><div style="background:var(--light);border-radius:4px;height:6px;overflow:hidden"><div style="background:'+barColor+';height:100%;width:'+info.pctPago+'%"></div></div></div>';
+      }
+      h+='<div id="'+eid+'" style="display:none;border-top:1px solid var(--light);padding:10px 14px">';
+      for(var i=0;i<items.length;i++){
+        var r=items[i];
+        h+='<div class="li"><div class="ld">'+fdate(r.data)+'</div><div class="li_i"><div class="li_d">'+(r.descricao||'')+'</div><div class="li_s"><span class="eb bm">'+r.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(r.valor)+'</div></div>';
+      }
+      h+='<div style="display:flex;gap:8px;margin-top:10px">';
+      h+='<button class="btn bp" onclick="imprimirExtratoCliente(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.78rem;padding:7px">🖨️ PDF</button>';
+      h+='<button class="btn" onclick="exportarExtratoClienteExcel(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.78rem;padding:7px;background:var(--green);color:#fff">📊 Excel</button>';
+      h+='</div></div></div>';
     }
-    h+='<div data-eid="'+eid+'" onclick="toggleEtapa(this)" style="display:flex;align-items:center;padding:14px 16px;cursor:pointer">';
-    h+='<div style="flex:1"><div style="font-weight:700;font-size:.9rem">'+cli+'</div><div style="font-size:.72rem;color:var(--gray)">'+on+' · '+items.length+' recebimento'+(items.length>1?'s':'')+(info.contrato?' · '+(info.contrato.num_parcelas-info.faltaParcelas)+'/'+info.contrato.num_parcelas+' parcelas':'')+'</div></div>';
-    h+='<div style="text-align:right;margin-right:10px"><div style="font-weight:700;color:var(--green)">'+fmt(total)+'</div>';
-    if(info.contrato && info.faltaValor>0) h+='<div style="font-size:.68rem;color:var(--red);font-weight:600">falta '+fmt(info.faltaValor)+'</div>';
-    else if(info.contrato) h+='<div style="font-size:.68rem;color:var(--green);font-weight:600">quitado ✓</div>';
-    h+='</div>';
-    h+='<span id="arr_'+eid+'" style="color:var(--gray);font-size:.8rem">▼</span></div>';
-    if(info.contrato && info.pctPago!==null){
-      var barColor = info.pctPago>=100 ? 'linear-gradient(90deg,#639922,#97c459)' : 'linear-gradient(90deg,var(--gold2),var(--gold3))';
-      h+='<div style="padding:0 16px 12px"><div style="background:var(--light);border-radius:4px;height:6px;overflow:hidden"><div style="background:'+barColor+';height:100%;width:'+info.pctPago+'%"></div></div></div>';
-    }
-    h+='<div id="'+eid+'" style="display:none;border-top:1px solid var(--light);padding:12px 16px">';
-    for(var i=0;i<items.length;i++){
-      var r=items[i];
-      h+='<div class="li"><div class="ld">'+fdate(r.data)+'</div><div class="li_i"><div class="li_d">'+(r.descricao||'')+'</div><div class="li_s"><span class="eb bm">'+r.tipo+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(r.valor)+'</div></div>';
-    }
-    h+='<div style="display:flex;gap:8px;margin-top:10px">';
-    h+='<button class="btn bp" onclick="imprimirExtratoCliente(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.8rem;padding:8px">🖨️ PDF</button>';
-    h+='<button class="btn" onclick="exportarExtratoClienteExcel(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.8rem;padding:8px;background:var(--green);color:#fff">📊 Excel</button>';
-    h+='</div></div></div>';
+    h+='</div></div>';
   }
   el.innerHTML=h;
 }
