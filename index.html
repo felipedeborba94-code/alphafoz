@@ -1706,6 +1706,10 @@ function renderRecClientes(){
       h+='<button class="btn" onclick="exportarExtratoClienteExcel(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.78rem;padding:7px;background:var(--green);color:#fff">📊 Excel</button>';
       h+='</div></div></div>';
     }
+    h+='<div style="display:flex;gap:8px;margin-top:6px;padding:0 2px">';
+    h+='<button class="btn bp" onclick="imprimirExtratoObra('+lista[0].obraIdCli+')" style="flex:1;font-size:.8rem;padding:8px">🖨️ Extrato Conciliado da Obra</button>';
+    h+='<button class="btn" onclick="exportarExtratoObraExcel('+lista[0].obraIdCli+')" style="flex:1;font-size:.8rem;padding:8px;background:var(--green);color:#fff">📊 Excel</button>';
+    h+='</div>';
     h+='</div></div>';
   }
   el.innerHTML=h;
@@ -1779,6 +1783,131 @@ async function exportarExtratoClienteExcel(cli){
   var blobOut=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   var url=URL.createObjectURL(blobOut);
   var a=document.createElement('a'); a.href=url; a.download='Extrato_'+cli.replace(/\s+/g,'_')+'.xlsx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function montarExtratoObra(oid){
+  var obra=obras.find(function(o){return Number(o.id)===Number(oid);});
+  if(!obra) return null;
+  var recObra=recebimentos.filter(function(r){return Number(r.obra_id)===Number(oid);});
+  var porCliente={};
+  for(var i=0;i<recObra.length;i++){
+    var cli=recObra[i].cliente||'(sem cliente)';
+    if(!porCliente[cli]) porCliente[cli]=[];
+    porCliente[cli].push(recObra[i]);
+  }
+  var clientes=Object.keys(porCliente).map(function(cli){
+    var items=porCliente[cli].slice().sort(function(a,b){return new Date(a.data)-new Date(b.data);});
+    var total=items.reduce(function(s,r){return s+(Number(r.valor)||0);},0);
+    var contrato=contratosClientes.find(function(c){return c.cliente===cli;});
+    var pagas=items.filter(function(r){return r.tipo==='Parcela comprador';});
+    var numerosUnicos={};
+    for(var pi=0;pi<pagas.length;pi++){
+      var mNum=(pagas[pi].descricao||'').match(/(\d+)\/\d+/);
+      numerosUnicos[mNum?mNum[1]:('_row'+pagas[pi].id)]=true;
+    }
+    var numPagas=Object.keys(numerosUnicos).length;
+    return {cli:cli, items:items, total:total, contrato:contrato, numPagas:numPagas};
+  }).sort(function(a,b){return b.total-a.total;});
+  var totalGeral=clientes.reduce(function(s,c){return s+c.total;},0);
+  return {obra:obra, clientes:clientes, totalGeral:totalGeral};
+}
+
+function imprimirExtratoObra(oid){
+  var ex=montarExtratoObra(oid);
+  if(!ex) return;
+  var win=window.open('','_blank');
+  win.document.write('<html><head><meta charset="UTF-8"><title>Extrato Conciliado — '+ex.obra.nome+'</title><style>');
+  win.document.write('body{font-family:Arial,sans-serif;margin:30px;color:#1a1a2e;font-size:12px}');
+  win.document.write('h1{font-size:1.1rem;margin:14px 0 2px;color:#0d1b2e}h2{font-size:.95rem;margin:20px 0 6px;color:#0d1b2e}.sub{color:#7a8fa8;font-size:.8rem;margin-bottom:16px}');
+  win.document.write('table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#0d1b2e;color:#fff;font-weight:600}td.num{text-align:right}');
+  win.document.write('.resumo th{background:#b8942a}.total-row td{font-weight:700;background:#f4f6f9}');
+  win.document.write('</style></head><body>');
+  win.document.write(logoHeaderHtml());
+  win.document.write('<h1>Extrato Conciliado de Recebimentos — '+ex.obra.nome+'</h1>');
+  win.document.write('<div class="sub">'+(ex.obra.local||'')+' · Emitido em '+new Date().toLocaleDateString('pt-BR')+'</div>');
+  win.document.write('<table class="resumo"><tr><th>Cliente</th><th>Parcelas Pagas</th><th>Total Recebido</th></tr>');
+  for(var i=0;i<ex.clientes.length;i++){
+    var c=ex.clientes[i];
+    win.document.write('<tr><td>'+c.cli+'</td><td>'+(c.contrato?c.numPagas+'/'+c.contrato.num_parcelas:c.items.length+' recebimento(s)')+'</td><td class="num">'+fmt(c.total)+'</td></tr>');
+  }
+  win.document.write('<tr class="total-row"><td colspan="2">Total Geral Recebido</td><td class="num">'+fmt(ex.totalGeral)+'</td></tr></table>');
+  for(var i=0;i<ex.clientes.length;i++){
+    var c=ex.clientes[i];
+    win.document.write('<h2>'+c.cli+'</h2>');
+    win.document.write('<table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr>');
+    for(var j=0;j<c.items.length;j++){
+      var r=c.items[j];
+      win.document.write('<tr><td>'+fdate(r.data)+'</td><td>'+(r.descricao||'')+'</td><td>'+r.tipo+'</td><td class="num">'+fmt(r.valor)+'</td></tr>');
+    }
+    win.document.write('</table>');
+  }
+  win.document.write('<p style="font-size:.72rem;color:#aab3c0;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:8px">AlphaFoz Empreendimentos · Documento para conciliação com a imobiliária</p>');
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
+
+async function exportarExtratoObraExcel(oid){
+  var ex=montarExtratoObra(oid);
+  if(!ex) return;
+  var navy='FF0D1B2E', gold='FFB8942A', white='FFFFFFFF', gray='FF7A8FA8', cream='FFF4F6F9';
+  var wb=new ExcelJS.Workbook();
+  var ws=wb.addWorksheet('Extrato Conciliado');
+  ws.columns=[{width:14},{width:32},{width:18},{width:16}];
+  try{
+    var resp=await fetch(window.location.origin+'/icon-192.png');
+    var buf=await (await resp.blob()).arrayBuffer();
+    var logoId=wb.addImage({buffer:buf, extension:'png'});
+    ws.addImage(logoId, {tl:{col:0,row:0}, ext:{width:40,height:40}});
+  } catch(e){}
+  ws.mergeCells('B1:C1'); ws.getCell('B1').value='ALPHAFOZ EMPREENDIMENTOS'; ws.getCell('B1').font={bold:true,size:13,color:{argb:navy}};
+  ws.mergeCells('B2:C2'); ws.getCell('B2').value='Extrato Conciliado — '+ex.obra.nome; ws.getCell('B2').font={bold:true,size:11,color:{argb:gray}};
+  var borderThin={style:'thin',color:{argb:'FFDDDDDD'}};
+  var r=5;
+  ['Cliente','Parcelas Pagas','Total Recebido'].forEach(function(h,idx){
+    var cell=ws.getRow(r).getCell(idx+1);
+    cell.value=h; cell.font={bold:true,color:{argb:white}}; cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:gold}};
+  });
+  r++;
+  for(var i=0;i<ex.clientes.length;i++){
+    var c=ex.clientes[i];
+    var row=ws.getRow(r);
+    row.getCell(1).value=c.cli;
+    row.getCell(2).value=c.contrato?(c.numPagas+'/'+c.contrato.num_parcelas):(c.items.length+' receb.');
+    row.getCell(3).value=c.total; row.getCell(3).numFmt='"R$" #,##0.00';
+    row.eachCell(function(cell){ cell.border={top:borderThin,bottom:borderThin,left:borderThin,right:borderThin}; });
+    r++;
+  }
+  ws.getCell('A'+r).value='TOTAL GERAL'; ws.getCell('A'+r).font={bold:true};
+  ws.getCell('C'+r).value=ex.totalGeral; ws.getCell('C'+r).numFmt='"R$" #,##0.00'; ws.getCell('C'+r).font={bold:true};
+  r+=3;
+  for(var i=0;i<ex.clientes.length;i++){
+    var c=ex.clientes[i];
+    ws.mergeCells('A'+r+':D'+r);
+    ws.getCell('A'+r).value=c.cli; ws.getCell('A'+r).font={bold:true,color:{argb:white}}; ws.getCell('A'+r).fill={type:'pattern',pattern:'solid',fgColor:{argb:navy}};
+    r++;
+    ['Data','Descrição','Tipo','Valor'].forEach(function(h,idx){
+      var cell=ws.getRow(r).getCell(idx+1);
+      cell.value=h; cell.font={bold:true}; cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:cream}};
+    });
+    r++;
+    for(var j=0;j<c.items.length;j++){
+      var it=c.items[j];
+      var row=ws.getRow(r);
+      row.getCell(1).value=fdate(it.data);
+      row.getCell(2).value=it.descricao||'';
+      row.getCell(3).value=it.tipo;
+      row.getCell(4).value=Number(it.valor)||0; row.getCell(4).numFmt='"R$" #,##0.00';
+      row.eachCell(function(cell){ cell.border={top:borderThin,bottom:borderThin,left:borderThin,right:borderThin}; });
+      r++;
+    }
+    r++;
+  }
+  var buffer=await wb.xlsx.writeBuffer();
+  var blobOut=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blobOut);
+  var a=document.createElement('a'); a.href=url; a.download='ExtratoConciliado_'+ex.obra.nome.replace(/\s+/g,'_')+'.xlsx';
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
