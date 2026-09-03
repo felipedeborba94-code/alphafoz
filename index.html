@@ -1822,25 +1822,29 @@ function imprimirExtratoObra(oid){
   win.document.write('h1{font-size:1.1rem;margin:14px 0 2px;color:#0d1b2e}h2{font-size:.95rem;margin:20px 0 6px;color:#0d1b2e}.sub{color:#7a8fa8;font-size:.8rem;margin-bottom:16px}');
   win.document.write('table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#0d1b2e;color:#fff;font-weight:600}td.num{text-align:right}');
   win.document.write('.resumo th{background:#b8942a}.total-row td{font-weight:700;background:#f4f6f9}');
+  win.document.write('.cliente-bloco{break-inside:avoid;page-break-inside:avoid}');
+  win.document.write('tr{break-inside:avoid;page-break-inside:avoid}');
+  win.document.write('@media print{.cliente-bloco{break-inside:avoid;page-break-inside:avoid}}');
   win.document.write('</style></head><body>');
   win.document.write(logoHeaderHtml());
   win.document.write('<h1>Extrato Conciliado de Recebimentos — '+ex.obra.nome+'</h1>');
   win.document.write('<div class="sub">'+(ex.obra.local||'')+' · Emitido em '+new Date().toLocaleDateString('pt-BR')+'</div>');
-  win.document.write('<table class="resumo"><tr><th>Cliente</th><th>Parcelas Pagas</th><th>Total Recebido</th></tr>');
+  win.document.write('<div class="cliente-bloco"><table class="resumo"><tr><th>Cliente</th><th>Parcelas Pagas</th><th>Total Recebido</th></tr>');
   for(var i=0;i<ex.clientes.length;i++){
     var c=ex.clientes[i];
     win.document.write('<tr><td>'+c.cli+'</td><td>'+(c.contrato?c.numPagas+'/'+c.contrato.num_parcelas:c.items.length+' recebimento(s)')+'</td><td class="num">'+fmt(c.total)+'</td></tr>');
   }
-  win.document.write('<tr class="total-row"><td colspan="2">Total Geral Recebido</td><td class="num">'+fmt(ex.totalGeral)+'</td></tr></table>');
+  win.document.write('<tr class="total-row"><td colspan="2">Total Geral Recebido</td><td class="num">'+fmt(ex.totalGeral)+'</td></tr></table></div>');
   for(var i=0;i<ex.clientes.length;i++){
     var c=ex.clientes[i];
+    win.document.write('<div class="cliente-bloco">');
     win.document.write('<h2>'+c.cli+'</h2>');
     win.document.write('<table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr>');
     for(var j=0;j<c.items.length;j++){
       var r=c.items[j];
       win.document.write('<tr><td>'+fdate(r.data)+'</td><td>'+(r.descricao||'')+'</td><td>'+r.tipo+'</td><td class="num">'+fmt(r.valor)+'</td></tr>');
     }
-    win.document.write('</table>');
+    win.document.write('</table></div>');
   }
   win.document.write('<p style="font-size:.72rem;color:#aab3c0;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:8px">AlphaFoz Empreendimentos · Documento para conciliação com a imobiliária</p>');
   win.document.write('</body></html>');
