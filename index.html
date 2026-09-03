@@ -1820,7 +1820,8 @@ function imprimirExtratoObra(oid){
   win.document.write('<html><head><meta charset="UTF-8"><title>Extrato Conciliado — '+ex.obra.nome+'</title><style>');
   win.document.write('body{font-family:Arial,sans-serif;margin:30px;color:#1a1a2e;font-size:12px}');
   win.document.write('h1{font-size:1.1rem;margin:14px 0 2px;color:#0d1b2e}h2{font-size:.95rem;margin:20px 0 6px;color:#0d1b2e}.sub{color:#7a8fa8;font-size:.8rem;margin-bottom:16px}');
-  win.document.write('table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left}th{background:#0d1b2e;color:#fff;font-weight:600}td.num{text-align:right}');
+  win.document.write('table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;table-layout:fixed}th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}th{background:#0d1b2e;color:#fff;font-weight:600}td.num{text-align:right}');
+  win.document.write('.detalhe th:nth-child(1),.detalhe td:nth-child(1){width:80px}.detalhe th:nth-child(2),.detalhe td:nth-child(2){width:auto;white-space:normal}.detalhe th:nth-child(3),.detalhe td:nth-child(3){width:130px}.detalhe th:nth-child(4),.detalhe td:nth-child(4){width:90px}');
   win.document.write('.resumo th{background:#b8942a}.total-row td{font-weight:700;background:#f4f6f9}');
   win.document.write('.cliente-bloco{break-inside:avoid;page-break-inside:avoid}');
   win.document.write('tr{break-inside:avoid;page-break-inside:avoid}');
@@ -1839,7 +1840,7 @@ function imprimirExtratoObra(oid){
     var c=ex.clientes[i];
     win.document.write('<div class="cliente-bloco">');
     win.document.write('<h2>'+c.cli+'</h2>');
-    win.document.write('<table><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr>');
+    win.document.write('<table class="detalhe"><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th></tr>');
     for(var j=0;j<c.items.length;j++){
       var r=c.items[j];
       win.document.write('<tr><td>'+fdate(r.data)+'</td><td>'+(r.descricao||'')+'</td><td>'+r.tipo+'</td><td class="num">'+fmt(r.valor)+'</td></tr>');
