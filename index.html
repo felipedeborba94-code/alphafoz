@@ -78,6 +78,67 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 .ec{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px}
 .ei{flex:1}.ei strong{font-size:.95rem;display:block}.ei span{font-size:.75rem;color:var(--gray)}
 @media(max-width:480px){.fg{grid-template-columns:1fr}.s2{grid-column:span 1}}
+/* Termo de Recebimento */
+.termo-header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:16px 20px;display:flex;align-items:center;margin:-16px -16px 20px -16px;border-radius:0;border-bottom:3px solid var(--gold2)}
+.termo-header img{height:34px;width:auto;object-fit:contain}
+.termo-decl{font-size:.88rem;line-height:1.7;text-align:justify}
+.termo-decl input[type=text]{border:none;border-bottom:1.5px solid var(--navy);background:transparent;font-weight:700;font-family:inherit;font-size:.88rem;padding:1px 4px}
+.termo-decl input.small{width:120px}
+.termo-decl input.med{width:200px}
+.termo-decl input.wide{width:100%;max-width:300px}
+.termo-resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 20px}
+.termo-resumo .tcard{border-radius:10px;padding:12px;text-align:center}
+.termo-resumo .tcard.ok{background:#e8f5ee;color:var(--green)}
+.termo-resumo .tcard.no{background:#fbe9e7;color:var(--red)}
+.termo-resumo .tcard.na{background:var(--light);color:var(--gray)}
+.termo-resumo .tcard b{display:block;font-size:1.3rem}
+.termo-resumo .tcard span{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px}
+.comodo{break-inside:avoid;page-break-inside:avoid;margin-bottom:22px;border:1px solid var(--light);border-radius:10px;overflow:hidden}
+.comodo-head{background:var(--navy);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.comodo-head input.nome-comodo{background:transparent;border:none;color:#fff;font-weight:700;font-size:.88rem;font-family:inherit;width:55%}
+.comodo-head .del{background:none;border:none;color:#ffb0a0;cursor:pointer;font-size:.78rem}
+.comodo-head .contagem{font-size:.68rem;color:var(--gold2)}
+table.checklist{width:100%;border-collapse:collapse;font-size:.8rem}
+table.checklist th{background:var(--cream);color:var(--gray);text-transform:uppercase;font-size:.62rem;letter-spacing:.4px;padding:7px 8px;text-align:left;border-bottom:1px solid var(--light)}
+table.checklist td{padding:6px 8px;border-bottom:1px solid var(--light);vertical-align:middle}
+table.checklist td.item-nome input{border:none;background:transparent;font-family:inherit;font-size:.8rem;width:100%}
+table.checklist select{border:1px solid var(--light);border-radius:6px;padding:3px 5px;font-family:inherit;font-size:.75rem;font-weight:600}
+table.checklist select.st-Aprovado{color:var(--green)}
+table.checklist select.st-Reprovado{color:var(--red)}
+table.checklist select.st-NA{color:var(--gray)}
+table.checklist input.obs{border:none;background:transparent;font-family:inherit;font-size:.75rem;width:100%}
+.row-add{padding:8px 14px}
+.row-add button{background:none;border:1px dashed var(--gray);color:var(--gray);border-radius:6px;padding:5px 10px;font-size:.72rem;cursor:pointer}
+.foto-area{padding:12px 14px}
+.foto-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:8px;display:block}
+.foto-grid{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.foto-wrap{position:relative;flex:0 1 260px}
+.foto-slot{width:100%;aspect-ratio:4/3;max-height:340px;border:1.5px dashed var(--light);border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:var(--cream);cursor:pointer}
+.foto-slot img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;margin:auto}
+.foto-slot span{font-size:.68rem;color:var(--gray);text-align:center;padding:0 8px}
+.foto-slot input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.foto-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;border:2px solid #fff;font-size:.62rem;cursor:pointer;line-height:1}
+.add-foto-btn{margin-top:10px;background:none;border:1px dashed var(--gray);color:var(--gray);border-radius:6px;padding:6px 12px;font-size:.72rem;cursor:pointer}
+#add-comodo-btn{display:block;width:100%;margin:12px 0 24px;padding:11px;border-radius:10px;border:2px dashed var(--gold2);background:none;color:var(--gold);font-weight:700;cursor:pointer;font-size:.8rem}
+.termo-clausulas p{font-size:.82rem;line-height:1.7;text-align:justify;margin:6px 0}
+.termo-clausulas b{color:var(--navy)}
+.termo-clausula-title{font-size:.9rem;color:var(--navy);margin:20px 0 6px;font-weight:700}
+.termo-assinaturas{margin-top:30px}
+.termo-assinaturas .local-data{text-align:right;font-size:.85rem;margin-bottom:30px}
+.termo-assinaturas .local-data input{border:none;border-bottom:1px solid var(--navy);background:transparent;font-family:inherit;font-weight:700}
+.sig-block{margin-bottom:28px}
+.sig-line{border-top:1px solid #1a1a2e;padding-top:6px;font-size:.82rem}
+.sig-name{font-weight:700}
+.sig-sub{font-size:.72rem;color:var(--gray)}
+.termo-footer-note{margin-top:26px;font-size:.68rem;color:var(--gray);border-top:1px solid var(--light);padding-top:10px;text-align:center}
+@media print{
+  header,nav,#add-comodo-btn,.row-add,.comodo-head .del,.foto-slot input,.col-del,.add-foto-btn,.foto-remove,.btn{display:none !important}
+  body{background:#fff}
+  main{padding:0;max-width:100%}
+  .comodo{page-break-inside:avoid}
+  #page-termo .card{box-shadow:none;padding:0;margin:0}
+  .termo-header{margin:0 0 20px 0}
+}
 </style>
 </head>
 <body>
@@ -416,6 +477,100 @@ hr{border:none;border-top:1px solid var(--light);margin:14px 0}
 <p style="font-size:.82rem;color:var(--gray);margin-bottom:12px;line-height:1.6">Registro automático de toda edição/exclusão de lançamentos e recebimentos — quando e o que mudou.</p>
 </div>
 <div id="aud-list"></div>
+</div>
+
+<div id="page-termo" class="page">
+<div class="card" style="padding:16px">
+  <button class="btn" onclick="go('recebimentos')" style="background:var(--light);color:var(--navy);font-size:.75rem;margin-bottom:14px">← Voltar</button>
+
+  <div class="termo-header">
+    <img src="/icon-192.png" alt="AlphaFoz Empreendimentos" onerror="this.style.display='none'">
+  </div>
+
+  <h1 style="text-align:center;font-size:1.1rem;color:var(--navy);letter-spacing:.5px;margin:0 0 18px">TERMO DE RECEBIMENTO DE OBRA</h1>
+
+  <div class="termo-decl">
+    Eu, <input type="text" class="med" value="NOME DO CLIENTE" id="t-cli-nome">, capaz, inscrito no CPF:
+    <input type="text" class="small" value="000.000.000-00" id="t-cli-cpf">, brasileiro(a), declaro que estou
+    ciente e de acordo com o Manual de Uso, Reparo e Manutenção do Imóvel, Termo de Recebimento e manual do
+    proprietário, para entrega da minha obra localizada em
+    <input type="text" class="wide" value="Endereço completo do imóvel" id="t-cli-endereco">,
+    na cidade de <input type="text" class="small" value="Foz do Iguaçu" id="t-cli-cidade">, entregue pela
+    <b>ALPHAFOZ EMPREENDIMENTOS</b>, vistoriada no dia
+    <input type="text" class="small" value="__/__/____" id="t-cli-data-vistoria">.
+    <br><br>
+    Declaro que todos os itens assinalados foram verificados, vistoriados e aceitos, conforme tabelas abaixo.
+  </div>
+
+  <div class="ct" style="margin-top:20px"><span class="dot"></span>Resumo Geral da Vistoria</div>
+  <div class="termo-resumo">
+    <div class="tcard ok"><b id="t-cnt-ok">0</b><span>Aprovados</span></div>
+    <div class="tcard no"><b id="t-cnt-no">0</b><span>Reprovados</span></div>
+    <div class="tcard na"><b id="t-cnt-na">0</b><span>Não Aplica</span></div>
+  </div>
+
+  <div id="t-comodos-container"></div>
+
+  <button id="add-comodo-btn" onclick="adicionarComodo()">+ Adicionar Cômodo / Ambiente</button>
+
+  <div class="termo-clausulas">
+    <div class="termo-clausula-title">CLÁUSULA 1 — DA DECLARAÇÃO</div>
+    <p>Declaro que todos os itens assinalados nas tabelas acima foram verificados, vistoriados e aceitos por
+    estarem em perfeitas condições de uso e funcionamento, ressalvadas as observações registradas em cada item.</p>
+
+    <div class="termo-clausula-title">CLÁUSULA 2 — DAS GARANTIAS E MANUTENÇÃO</div>
+    <p><b>2.1.</b> A obra foi executada em obediência aos projetos e especificações técnicas. Nos termos do
+    <b>art. 618 do Código Civil</b>, o executor responde pela solidez e segurança da obra pelo prazo de <b>5
+    (cinco) anos</b>. Conforme o <b>art. 26, inciso II, do Código de Defesa do Consumidor</b>, o prazo para
+    reclamação de vícios aparentes ou de fácil constatação é de <b>90 (noventa) dias</b>, contados desta data de
+    entrega. Demais garantias seguem as normas técnicas vigentes (NBR 15575).</p>
+    <p><b>2.2.</b> A aceitação dos itens visíveis nesta data não exime a construtora da responsabilidade legal
+    sobre vícios ocultos, observados os prazos legais de reclamação.</p>
+    <p><b>2.3.</b> O proprietário declara ciência de que deverá realizar a manutenção periódica preventiva do
+    imóvel (calhas, rufos, vedações, pinturas, esquadrias e demais itens sujeitos a desgaste natural), conforme
+    orientações do Manual do Proprietário entregue em anexo.</p>
+
+    <div class="termo-clausula-title">CLÁUSULA 3 — DO CONTATO PÓS-ENTREGA</div>
+    <p>Eventuais problemas construtivos identificados após a entrega deverão ser comunicados pelo e-mail
+    <b>alphaafoz@gmail.com</b>, conforme orientações detalhadas no Manual de Uso, Reparo e Manutenção do Imóvel
+    entregue junto a este termo.</p>
+
+    <div class="termo-clausula-title">CLÁUSULA 4 — DO FORO</div>
+    <p>As partes elegem o foro da comarca de Foz do Iguaçu, PR, para dirimir quaisquer controvérsias oriundas
+    deste termo.</p>
+
+    <div class="termo-clausula-title">CLÁUSULA 5 — DA VALIDADE E EFICÁCIA DA ASSINATURA ELETRÔNICA GOV.BR</div>
+    <p>Este termo é celebrado via assinaturas eletrônicas avançadas no portal GOV.BR (Lei nº 14.063/2020). As
+    partes reconhecem a autenticidade, integridade e validade jurídica deste documento, que possui força de
+    título executivo extrajudicial.</p>
+  </div>
+
+  <div class="termo-assinaturas">
+    <div class="local-data">
+      Foz do Iguaçu, PR, <input type="text" style="width:26px" value="__">
+      de <input type="text" style="width:100px" value="__________">
+      de <input type="text" style="width:55px" value="2026">.
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name">ALPHAFOZ EMPREENDIMENTOS</div>
+        <div class="sig-sub">CNPJ: 65.504.962/0001-23 · Responsável Técnico: Eduardo Oliveira — CREA PR-175819/D</div>
+      </div>
+    </div>
+
+    <div class="sig-block">
+      <div class="sig-line">
+        <div class="sig-name" id="t-assin-nome">NOME DO CLIENTE</div>
+        <div class="sig-sub">CPF: <span id="t-assin-cpf">000.000.000-00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="termo-footer-note">AlphaFoz Empreendimentos · Termo de Recebimento de Obra · Documento gerado em <span id="t-hoje"></span></div>
+
+  <button class="btn bg" onclick="window.print()" style="width:100%;margin-top:16px">🖨️ Imprimir / Salvar PDF</button>
+</div>
 </div>
 </main>
 <script>
@@ -1704,7 +1859,9 @@ function renderRecClientes(){
       h+='<div style="display:flex;gap:8px;margin-top:10px">';
       h+='<button class="btn bp" onclick="imprimirExtratoCliente(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.78rem;padding:7px">🖨️ PDF</button>';
       h+='<button class="btn" onclick="exportarExtratoClienteExcel(\''+cli.replace(/'/g,"\\'")+'\')" style="flex:1;font-size:.78rem;padding:7px;background:var(--green);color:#fff">📊 Excel</button>';
-      h+='</div></div></div>';
+      h+='</div>';
+      h+='<button class="btn" onclick="abrirTermoRecebimento(\''+cli.replace(/'/g,"\\'")+'\')" style="width:100%;margin-top:8px;font-size:.78rem;padding:7px;background:var(--navy);color:#fff">📝 Gerar Termo de Recebimento</button>';
+      h+='</div></div>';
     }
     h+='<div style="display:flex;gap:8px;margin-top:6px;padding:0 2px">';
     h+='<button class="btn bp" onclick="imprimirExtratoObra('+lista[0].obraIdCli+')" style="flex:1;font-size:.8rem;padding:8px">🖨️ Extrato Conciliado da Obra</button>';
@@ -2063,6 +2220,170 @@ function renderFornecedores(){
   }
   el.innerHTML=h;
 }
+
+var checklistPadrao = {
+  "Sala de Estar": ["Porta","Pintura interna","Janela","Forro gesso","Tomadas","Iluminação","Piso Cerâmico"],
+  "Cozinha": ["Porta","Pintura","Janela","Forro gesso","Tomadas","Iluminação","Revestimento Cerâmico","Pia água e esgoto","Registros"],
+  "Dormitório": ["Porta","Pintura","Janela","Forro gesso","Tomadas","Iluminação","Revestimento Cerâmico"],
+  "Dormitório Suíte": ["Porta","Pintura","Janela","Forro gesso","Tomadas","Iluminação","Piso Cerâmico"],
+  "Banheiro Social": ["Porta","Pia e cuba","Janela","Forro gesso","Tomadas","Iluminação","Piso Cerâmico","Vaso Sanitário","Ralo, sifão, engate","Fissuras ou Rachaduras?"],
+  "Banheiro Suíte": ["Porta","Pia e cuba","Janela","Forro gesso","Tomadas","Iluminação","Piso Cerâmico","Vaso Sanitário","Ralo, sifão, engate","Fissuras ou Rachaduras?"],
+  "Lavanderia": ["Pintura","Tomadas","Iluminação","Piso Cerâmico","Tanque água e esgoto","Revestimento","Registros"],
+  "Fachada/Muro Frontal e Portão": ["Pintura","Iluminação","Calçada","Textura","Portão","Fissuras ou Rachaduras?"],
+  "Telhado": ["Telhas","Calhas","Rufos"]
+};
+var comodoCount = 0;
+
+function criarLinhaItem(nome){
+  return '<tr>'+
+    '<td class="item-nome"><input type="text" value="'+nome+'"></td>'+
+    '<td><select class="st-Aprovado" onchange="onStatusChange(this)"><option>Aprovado</option><option>Reprovado</option><option>Não Aplica</option></select></td>'+
+    '<td><input class="obs" type="text" placeholder="Observação..."></td>'+
+    '<td class="col-del" style="width:24px"><button class="item-del-btn" onclick="this.closest(\'tr\').remove();atualizarResumoTermo()" style="background:none;border:none;color:var(--gray);cursor:pointer">✕</button></td>'+
+  '</tr>';
+}
+
+function onStatusChange(sel){
+  sel.className = sel.value==='Aprovado' ? 'st-Aprovado' : (sel.value==='Reprovado' ? 'st-Reprovado' : 'st-NA');
+  atualizarResumoTermo();
+}
+
+function criarComodo(nome, itens){
+  comodoCount++;
+  var id = 'comodo_'+comodoCount;
+  var linhasHtml = itens.map(criarLinhaItem).join('');
+  var html = '<div class="comodo" id="'+id+'">'+
+    '<div class="comodo-head">'+
+      '<input class="nome-comodo" type="text" value="'+nome+'">'+
+      '<span class="contagem"></span>'+
+      '<button class="del" onclick="document.getElementById(\''+id+'\').remove();atualizarResumoTermo()">Excluir ✕</button>'+
+    '</div>'+
+    '<table class="checklist"><tr><th style="width:38%">Item</th><th style="width:22%">Status</th><th>Observação</th><th class="col-del"></th></tr>'+
+    linhasHtml+
+    '</table>'+
+    '<div class="row-add"><button onclick="adicionarItem(\''+id+'\')">+ item</button></div>'+
+    '<div class="foto-area"><span class="foto-label">Fotos deste ambiente</span>'+
+      '<div class="foto-grid" id="'+id+'_fotos">'+
+        criarFotoSlot()+
+      '</div>'+
+      '<button class="add-foto-btn" onclick="adicionarFoto(\''+id+'\')">+ adicionar foto</button>'+
+    '</div>'+
+  '</div>';
+  document.getElementById('t-comodos-container').insertAdjacentHTML('beforeend', html);
+}
+
+function criarFotoSlot(){
+  return '<div class="foto-wrap"><label class="foto-slot"><span>+ foto</span><input type="file" accept="image/*" onchange="previewFotoTermo(this)"></label><button class="foto-remove" onclick="this.parentElement.remove()">✕</button></div>';
+}
+
+function previewFotoTermo(input){
+  if(!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var slot = input.closest('.foto-slot');
+    var img = new Image();
+    img.onload = function(){
+      var ratio = img.naturalWidth / img.naturalHeight;
+      slot.style.aspectRatio = ratio.toFixed(3);
+    };
+    img.src = e.target.result;
+    slot.innerHTML = '';
+    slot.appendChild(img);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function adicionarFoto(comodoId){
+  document.getElementById(comodoId+'_fotos').insertAdjacentHTML('beforeend', criarFotoSlot());
+}
+
+function adicionarItem(comodoId){
+  var tbody = document.querySelector('#'+comodoId+' table.checklist');
+  tbody.insertAdjacentHTML('beforeend', criarLinhaItem('Novo item'));
+}
+
+function adicionarComodo(){
+  var nome = prompt('Nome do cômodo/ambiente:', 'Novo Cômodo');
+  if(!nome) return;
+  var modeloExistente = checklistPadrao[nome];
+  criarComodo(nome, modeloExistente || ["Item 1","Item 2","Item 3"]);
+  atualizarResumoTermo();
+}
+
+function atualizarResumoTermo(){
+  var ok=0, no=0, na=0;
+  document.querySelectorAll('#page-termo .comodo').forEach(function(comodo){
+    var selects = comodo.querySelectorAll('table.checklist select');
+    var cok=0,cno=0,cna=0;
+    selects.forEach(function(s){
+      if(s.value==='Aprovado'){ok++;cok++;}
+      else if(s.value==='Reprovado'){no++;cno++;}
+      else {na++;cna++;}
+    });
+    comodo.querySelector('.contagem').textContent = cok+' aprovados'+(cno>0?' · '+cno+' reprovados':'')+(cna>0?' · '+cna+' N/A':'');
+  });
+  document.getElementById('t-cnt-ok').textContent = ok;
+  document.getElementById('t-cnt-no').textContent = no;
+  document.getElementById('t-cnt-na').textContent = na;
+}
+
+async function abrirTermoRecebimento(cli){
+  var recCli=recebimentos.find(function(r){return r.cliente===cli;});
+  if(!recCli){ alert('Cliente não encontrado.'); return; }
+  var obra=obras.find(function(o){return Number(o.id)===Number(recCli.obra_id);});
+  var contrato=contratosClientes.find(function(c){return c.cliente===cli;});
+  var cpf=contrato?contrato.cpf:null;
+  var nomeCompleto=contrato?contrato.nome_completo:null;
+  var precisaSalvar=false;
+  if(!cpf){
+    cpf=prompt('CPF de '+cli+' (será salvo para os próximos termos):','');
+    precisaSalvar=true;
+  }
+  if(!nomeCompleto){
+    nomeCompleto=prompt('Nome completo de '+cli+' conforme contrato (será salvo para os próximos termos):', cli);
+    precisaSalvar=true;
+  }
+  if(precisaSalvar && contrato && (cpf||nomeCompleto)){
+    loading(true);
+    var upd={};
+    if(cpf) upd.cpf=cpf;
+    if(nomeCompleto) upd.nome_completo=nomeCompleto;
+    var r=await sb.from('contratos_clientes').update(upd).eq('id',contrato.id).select();
+    loading(false);
+    if(r.data && r.data.length>0){
+      var idx=contratosClientes.findIndex(function(c){return c.id===contrato.id;});
+      contratosClientes[idx]=r.data[0];
+    }
+  }
+  var nomeExibir = nomeCompleto || cli;
+
+  document.getElementById('t-cli-nome').value = nomeExibir;
+  if(cpf) document.getElementById('t-cli-cpf').value = cpf;
+  if(obra) document.getElementById('t-cli-endereco').value = obra.local || '';
+  document.getElementById('t-cli-cidade').value = 'Foz do Iguaçu';
+  document.getElementById('t-assin-nome').textContent = nomeExibir.toUpperCase();
+  if(cpf) document.getElementById('t-assin-cpf').textContent = cpf;
+  document.getElementById('t-hoje').textContent = new Date().toLocaleDateString('pt-BR');
+
+  document.getElementById('t-comodos-container').innerHTML = '';
+  comodoCount = 0;
+  Object.keys(checklistPadrao).forEach(function(nome){
+    criarComodo(nome, checklistPadrao[nome]);
+  });
+  atualizarResumoTermo();
+
+  var pages = document.querySelectorAll('.page');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('active');
+  document.getElementById('page-termo').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+document.getElementById('t-cli-nome') && document.getElementById('t-cli-nome').addEventListener('input', function(){
+  document.getElementById('t-assin-nome').textContent = this.value.toUpperCase();
+});
+document.getElementById('t-cli-cpf') && document.getElementById('t-cli-cpf').addEventListener('input', function(){
+  document.getElementById('t-assin-cpf').textContent = this.value;
+});
 
 async function editarFornecedor(id){
   var f=fornecedores.find(function(x){return x.id===id;});
