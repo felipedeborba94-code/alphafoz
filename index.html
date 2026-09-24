@@ -1748,7 +1748,7 @@ function renderRecResumo(){
   var h='<div class="sg" style="margin-bottom:0">';
   for(var i=0;i<keys.length;i++){
     var o=porObra[keys[i]];
-    h+='<div class="sc gold"><div class="lb">'+o.nome+' · Recebido</div><div class="vl">'+fmt(o.recebido)+'</div><div class="sb">Total já entrado</div></div>';
+    h+='<div class="sc gold"><div class="lb">'+o.nome+' · Recebido</div><div class="vl">'+fmt(o.recebido)+'</div><div class="sb">Total recebido</div></div>';
     h+='<div class="sc"><div class="lb">'+o.nome+' · A Receber</div><div class="vl">'+fmt(o.projetado)+'</div><div class="sb">'+(o.clientesPendentes>0?o.clientesPendentes+' cliente(s) pendente(s)':'Todos quitados ✓')+'</div></div>';
   }
   h+='</div>';
