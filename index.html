@@ -2216,7 +2216,7 @@ function renderFornecedores(){
     var f=lista[i];
     var gasto=gastoPorFornecedor[f.nome]||0;
     var qtdCompras=lancs.filter(function(l){return l.ref===f.nome;}).length;
-    h+='<div class="ec" style="cursor:pointer" onclick="editarFornecedor('+f.id+')"><div style="font-size:1.4rem">🚚</div><div class="ei"><strong>'+f.nome+'</strong><span>'+(f.cnpj?'CNPJ: '+f.cnpj+' · ':'')+(f.telefone||'sem telefone cadastrado')+'</span><span style="font-size:.73rem;color:var(--gray)">Total gasto: '+fmt(gasto)+' · '+qtdCompras+' compra'+(qtdCompras!==1?'s':'')+'</span></div></div>';
+    h+='<div class="ec" style="display:flex;align-items:center;gap:8px"><div style="cursor:pointer;display:flex;align-items:center;gap:12px;flex:1;min-width:0" onclick="editarFornecedor('+f.id+')"><div style="font-size:1.4rem">🚚</div><div class="ei"><strong>'+f.nome+'</strong><span>'+(f.cnpj?'CNPJ: '+f.cnpj+' · ':'')+(f.telefone||'sem telefone cadastrado')+'</span><span style="font-size:.73rem;color:var(--gray)">Total gasto: '+fmt(gasto)+' · '+qtdCompras+' compra'+(qtdCompras!==1?'s':'')+'</span></div></div><button onclick="event.stopPropagation();excluirFornecedor('+f.id+')" title="Excluir fornecedor" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:6px;color:#c0392b;flex-shrink:0">🗑️</button></div>';
   }
   el.innerHTML=h;
 }
@@ -2402,6 +2402,23 @@ async function editarFornecedor(id){
     fornecedores[idx]=r.data[0];
     renderFornecedores();
   }
+}
+
+async function excluirFornecedor(id){
+  var f=fornecedores.find(function(x){return x.id===id;});
+  if(!f) return;
+  var qtdCompras=lancs.filter(function(l){return l.ref===f.nome;}).length;
+  if(qtdCompras>0){
+    alert('Não é possível excluir "'+f.nome+'": existem '+qtdCompras+' lançamento'+(qtdCompras!==1?'s':'')+' vinculado'+(qtdCompras!==1?'s':'')+' a esse fornecedor. Altere os lançamentos para outro fornecedor antes de excluir.');
+    return;
+  }
+  if(!confirm('Excluir o fornecedor "'+f.nome+'"? Essa ação não pode ser desfeita.')) return;
+  loading(true);
+  var r=await sb.from('fornecedores').delete().eq('id',id);
+  loading(false);
+  if(r.error){ alert('Erro ao excluir: '+r.error.message); return; }
+  fornecedores=fornecedores.filter(function(x){return x.id!==id;});
+  renderFornecedores();
 }
 
 async function renderAuditoria(){
