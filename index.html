@@ -1299,6 +1299,12 @@ function gerarLivroCaixa(){
   document.getElementById('lc-preview').innerHTML=h;
 }
 
+function voltarBtnHtml(){
+  var u=location.href.split('#')[0];
+  return '<style>@media print{.no-print{display:none!important}}</style>'+
+    '<button class="no-print" onclick="try{if(window.opener)window.opener.focus();}catch(e){}window.close();setTimeout(function(){location.href=\''+u+'\';},400)" style="position:fixed;top:12px;left:12px;z-index:9999;background:#0d1b2e;color:#fff;border:none;border-radius:8px;padding:12px 18px;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.3)">← Voltar ao sistema</button>';
+}
+
 function logoHeaderHtml(){
   var logoUrl=window.location.origin+'/icon-192.png';
   return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
@@ -1331,7 +1337,7 @@ function imprimirLivroCaixa(oid, mes){
   win.document.write('<tr class="saldo-row"><td colspan="5">Saldo Final</td><td class="num">'+money(lc.saldoFinal)+'</td></tr>');
   win.document.write('</table>');
   win.document.write('<div class="foot">AlphaFoz Empreendimentos · Relatório gerado em '+new Date().toLocaleDateString('pt-BR')+'</div>');
-  win.document.write('</body></html>');
+  win.document.write(voltarBtnHtml()+'</body></html>');
   win.document.close();
   win.print();
 }
@@ -1579,7 +1585,7 @@ function imprimirFiscal(){
   }
 
   win.document.write('<p style="font-size:.75rem;color:#7a8fa8;margin-top:30px">Este relatório é uma estimativa baseada nos lançamentos registrados no sistema AlphaFoz. Consulte seu contador para confirmação dos valores.</p>');
-  win.document.write('</body></html>');
+  win.document.write(voltarBtnHtml()+'</body></html>');
   win.document.close();
   win.print();
 }
@@ -1893,7 +1899,7 @@ function imprimirExtratoCliente(cli){
     win.document.write('<tr><td>'+fdate(r.data)+'</td><td>'+(r.descricao||'')+'</td><td>'+r.tipo+'</td><td class="num">'+fmt(r.valor)+'</td></tr>');
   }
   win.document.write('<tr class="total-row"><td colspan="3">Total Recebido</td><td class="num">'+fmt(total)+'</td></tr>');
-  win.document.write('</table></body></html>');
+  win.document.write('</table>'+voltarBtnHtml()+'</body></html>');
   win.document.close();
   win.print();
 }
@@ -2005,7 +2011,7 @@ function imprimirExtratoObra(oid){
     win.document.write('</table></div>');
   }
   win.document.write('<p style="font-size:.72rem;color:#aab3c0;margin-top:20px;border-top:1px solid #e2e8f0;padding-top:8px">AlphaFoz Empreendimentos · Documento para conciliação com a imobiliária</p>');
-  win.document.write('</body></html>');
+  win.document.write(voltarBtnHtml()+'</body></html>');
   win.document.close();
   win.print();
 }
