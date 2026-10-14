@@ -445,6 +445,7 @@ table.checklist input.obs{border:none;background:transparent;font-family:inherit
         <div><label>Sócio</label><select id="ap-socio">
           <option>Felipe de Borba</option>
           <option>Maico Pian</option>
+          <option>Rendimentos (a dividir)</option>
         </select></div>
         <div><label>Data</label><input type="date" id="ap-data"></div>
         <div class="s2"><label>Descrição</label><input type="text" id="ap-desc" placeholder="Ex: Aporte inicial, Aporte obras..."></div>
@@ -1688,6 +1689,7 @@ function renderCxResumo(){
   document.getElementById('cx-fluxo').innerHTML = h||'<div class="empty">Nenhum dado</div>';
 
   var socios=['Felipe de Borba','Maico Pian'];
+  if(aportes.some(function(a){return a.socio==='Rendimentos (a dividir)';})) socios.push('Rendimentos (a dividir)');
   var sh='';
   for(var i=0;i<socios.length;i++){
     var s=socios[i];
@@ -1695,7 +1697,7 @@ function renderCxResumo(){
     var pct=aportes.reduce(function(sum,a){return sum+(a.valor||0);},0);
     pct=pct>0?Math.round(total/pct*100):0;
     sh+='<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--light)">';
-    sh+='<div style="font-size:1.4rem;margin-right:12px">🤝</div>';
+    sh+='<div style="font-size:1.4rem;margin-right:12px">'+(s.indexOf('Rendimentos')===0?'📈':'🤝')+'</div>';
     sh+='<div style="flex:1"><div style="font-weight:600;font-size:.9rem">'+s+'</div>';
     sh+='<div style="font-size:.75rem;color:var(--gray)">'+pct+'% do total aportado</div></div>';
     sh+='<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem">'+fmt(total)+'</div>';
@@ -2170,7 +2172,7 @@ function renderAportes(){
   var h='';
   for(var i=0;i<la.length;i++){
     var a=la[i];
-    h+='<div class="li"><div class="ld">'+fdate(a.data)+'</div><div class="li_i"><div class="li_d">'+(a.descricao||'')+'</div><div class="li_s"><span class="eb bt">'+a.socio+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(a.valor)+'</div><button class="li_x" onclick="delAp('+a.id+')">✕</button></div>';
+    h+='<div class="li"><div class="ld">'+fdate(a.data)+'</div><div class="li_i"><div class="li_d">'+(a.descricao||'')+'</div><div class="li_s"><span class="eb bt"'+(a.socio.indexOf('Rendimentos')===0?' style="background:#e6f4ea;color:#1e7e34"':'')+'>'+(a.socio.indexOf('Rendimentos')===0?'📈 ':'')+a.socio+'</span></div></div><div class="li_v" style="color:var(--green)">'+fmt(a.valor)+'</div><button class="li_x" onclick="delAp('+a.id+')">✕</button></div>';
   }
   el.innerHTML=h;
 }
