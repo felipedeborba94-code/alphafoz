@@ -548,9 +548,9 @@ table.checklist input.obs{border:none;background:transparent;font-family:inherit
 
   <div class="termo-assinaturas">
     <div class="local-data">
-      Foz do Iguaçu, PR, <input type="text" style="width:60px" value="" placeholder="__">
-      de <input type="text" style="width:160px" value="" placeholder="__________">
-      de <input type="text" style="width:80px" value="2026">.
+      Foz do Iguaçu, PR, <input type="text" id="t-data-dia" style="width:60px" value="" placeholder="__">
+      de <input type="text" id="t-data-mes" style="width:160px" value="" placeholder="__________">
+      de <input type="text" id="t-data-ano" style="width:80px" value="2026">.
     </div>
 
     <div class="sig-block">
@@ -2373,6 +2373,10 @@ async function abrirTermoRecebimento(cli){
   document.getElementById('t-assin-nome').textContent = nomeExibir.toUpperCase();
   if(cpf) document.getElementById('t-assin-cpf').textContent = cpf;
   document.getElementById('t-hoje').textContent = new Date().toLocaleDateString('pt-BR');
+  (function(){var d=new Date(),M=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    document.getElementById('t-data-dia').value=d.getDate();
+    document.getElementById('t-data-mes').value=M[d.getMonth()];
+    document.getElementById('t-data-ano').value=d.getFullYear();})();
 
   document.getElementById('t-comodos-container').innerHTML = '';
   comodoCount = 0;
