@@ -125,7 +125,7 @@ table.checklist input.obs{border:none;background:transparent;font-family:inherit
 .termo-clausula-title{font-size:.9rem;color:var(--navy);margin:20px 0 6px;font-weight:700}
 .termo-assinaturas{margin-top:30px}
 .termo-assinaturas .local-data{text-align:right;font-size:.85rem;margin-bottom:30px}
-.termo-assinaturas .local-data input{border:none;border-bottom:1px solid var(--navy);background:transparent;font-family:inherit;font-weight:700}
+.termo-assinaturas .local-data input{width:auto;padding:2px 6px;text-align:center;font-size:.95rem;border:none;border-bottom:1px solid var(--navy);background:transparent;font-family:inherit;font-weight:700}
 .sig-block{margin-bottom:28px}
 .sig-line{border-top:1px solid #1a1a2e;padding-top:6px;font-size:.82rem}
 .sig-name{font-weight:700}
@@ -548,9 +548,9 @@ table.checklist input.obs{border:none;background:transparent;font-family:inherit
 
   <div class="termo-assinaturas">
     <div class="local-data">
-      Foz do Iguaçu, PR, <input type="text" style="width:26px" value="__">
-      de <input type="text" style="width:100px" value="__________">
-      de <input type="text" style="width:55px" value="2026">.
+      Foz do Iguaçu, PR, <input type="text" style="width:60px" value="" placeholder="__">
+      de <input type="text" style="width:160px" value="" placeholder="__________">
+      de <input type="text" style="width:80px" value="2026">.
     </div>
 
     <div class="sig-block">
@@ -1694,12 +1694,13 @@ function renderCxResumo(){
   for(var i=0;i<socios.length;i++){
     var s=socios[i];
     var total=aportes.filter(function(a){return a.socio===s;}).reduce(function(sum,a){return sum+(a.valor||0);},0);
-    var pct=aportes.reduce(function(sum,a){return sum+(a.valor||0);},0);
+    var isRend=s.indexOf('Rendimentos')===0;
+    var pct=aportes.filter(function(a){return a.socio!=='Rendimentos (a dividir)';}).reduce(function(sum,a){return sum+(a.valor||0);},0);
     pct=pct>0?Math.round(total/pct*100):0;
     sh+='<div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--light)">';
     sh+='<div style="font-size:1.4rem;margin-right:12px">'+(s.indexOf('Rendimentos')===0?'📈':'🤝')+'</div>';
     sh+='<div style="flex:1"><div style="font-weight:600;font-size:.9rem">'+s+'</div>';
-    sh+='<div style="font-size:.75rem;color:var(--gray)">'+pct+'% do total aportado</div></div>';
+    sh+='<div style="font-size:.75rem;color:var(--gray)">'+(isRend?'Não entra no % dos sócios (a dividir)':pct+'% do total aportado pelos sócios')+'</div></div>';
     sh+='<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:1rem">'+fmt(total)+'</div>';
     sh+='</div>';
   }
