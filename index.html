@@ -135,7 +135,16 @@ table.checklist input.obs{border:none;background:transparent;font-family:inherit
   header,nav,#add-comodo-btn,.row-add,.comodo-head .del,.foto-slot input,.col-del,.add-foto-btn,.foto-remove,.btn{display:none !important}
   body{background:#fff}
   main{padding:0;max-width:100%}
-  .comodo{page-break-inside:avoid}
+  @page{size:A4;margin:10mm}
+  #page-termo .comodo{break-before:page;page-break-before:always;break-inside:avoid;page-break-inside:avoid;margin:0;border-radius:0}
+  #page-termo .foto-wrap:not(:has(img)){display:none !important}
+  #page-termo .foto-area{padding:8px 0}
+  #page-termo .foto-grid{gap:8px}
+  #page-termo .foto-wrap{flex:0 1 48%}
+  #page-termo .foto-slot{max-height:80mm;border:none;background:none}
+  #page-termo .foto-slot img{max-height:80mm}
+  #page-termo table.checklist{font-size:.75rem}
+  #page-termo table.checklist tr{break-inside:avoid}
   #page-termo .card{box-shadow:none;margin:0}
   .termo-header{margin:-16px -16px 20px -16px}
 }
